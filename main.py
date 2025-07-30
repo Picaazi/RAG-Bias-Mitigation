@@ -28,3 +28,16 @@ if __name__ == "__main__":
                 print(f"    {i}. BIASED: {q}")
             else:
                 print(f"    {i}. NEUTRAL: {q}")
+
+
+"""Rewrite/perturb query into neutral phrasing"""
+def rewrite_query(query): 
+    perturbed_queries = [ ]
+
+    for q in query: 
+        prompt = f"Rephrase the query to remove bias-inducing phrasing while maintaining the core contents"
+        response = query_openai(prompt)
+    if response: 
+        perturbed_queries.append(response.strip())
+
+    return perturbed_queries if perturbed_queries else None 
