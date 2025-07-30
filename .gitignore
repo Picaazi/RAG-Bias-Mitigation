@@ -3,6 +3,16 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Environment files and API Keys
+.env
+*.env
+*api_key*
+*secret*
+
+# Analysis results and generated data
+data/analysis_results.json
+data/bias_report_*.json
+
 # C extensions
 *.so
 
