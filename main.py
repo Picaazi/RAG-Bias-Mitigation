@@ -25,6 +25,6 @@ if __name__ == "__main__":
         print("\nBias Classification:")
         for i, (q, is_biased) in enumerate(zip(response, bias_results), 1):
             if is_biased:
-                print(f"    {i}. ⚠️  BIASED: {q}")
+                print(f"    {i}. BIASED: {q}")
             else:
-                print(f"    {i}. ✅ NEUTRAL: {q}")
+                print(f"    {i}. NEUTRAL: {q}")
