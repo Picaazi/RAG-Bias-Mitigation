@@ -31,3 +31,28 @@ def query_openai(query, model="gpt-3.5-turbo"):
     except Exception as e:
         print(f"Error querying OpenAI: {e}")
         return None
+
+def get_openai_embedding(text, model="text-embedding-ada-002"):
+    """
+    Get OpenAI embedding for the given text.
+    Requires the OPENAI_KEY environment variable to be set.
+    """
+    api_key = os.getenv("OPENAI_KEY")
+    if not api_key:
+        print("OPENAI_KEY environment variable not set.")
+        return None
+        
+    # Initialize OpenAI client
+    client = openai.OpenAI(api_key=api_key)
+    
+    try:
+        response = client.embeddings.create(
+            model=model,
+            input=text
+        )
+        
+        embedding = response.data[0].embedding
+        return embedding
+    except Exception as e:
+        print(f"Error getting embedding: {e}")
+        return None
