@@ -34,4 +34,6 @@ def sem_similarity(orig_embed, new_embed):
     new_embed: embedding of top-k documents retrieved by reformed queries 
     """
 
+def avg_embedding(embeddings): 
+
 
