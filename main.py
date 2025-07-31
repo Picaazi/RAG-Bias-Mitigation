@@ -31,7 +31,18 @@ def decompose():
                 print(f"    {i}. BIASED: {q}")
             else:
                 print(f"    {i}. NEUTRAL: {q}")
-                
+
+"""Rewrite/perturb query into neutral phrasing"""
+def rewrite_query(query): 
+    perturbed_queries = [ ]
+
+    for q in query: 
+        prompt = f"Rephrase the query to remove bias-inducing phrasing while maintaining the core contents"
+        response = query_openai(prompt)
+    if response: 
+        perturbed_queries.append(response.strip())
+
+                   
 def rag():
     """RAG functionality with document embedding and retrieval."""
     # Read documents (you may need to adjust the path/method based on your setup)
@@ -92,14 +103,3 @@ if __name__ == "__main__":
 
 
 
-"""Rewrite/perturb query into neutral phrasing"""
-def rewrite_query(query): 
-    perturbed_queries = [ ]
-
-    for q in query: 
-        prompt = f"Rephrase the query to remove bias-inducing phrasing while maintaining the core contents"
-        response = query_openai(prompt)
-    if response: 
-        perturbed_queries.append(response.strip())
-
-    return perturbed_queries if perturbed_queries else None 
