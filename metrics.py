@@ -12,4 +12,14 @@ def doc_overlap(original_set, new_set):
         new_set: list of top-k documents retrieved from new queries
     """
 
+    original_set = set(original_set) 
+    new_set = set(new_set) 
     intersect =  original_set.intersection(new_set) 
+
+    if len(original_set) = 0: 
+        return 0
+
+return (len(intersect)) / (len(original_set)) * 100 
+
+
+def sem_similarity:
