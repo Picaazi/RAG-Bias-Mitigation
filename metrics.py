@@ -30,8 +30,8 @@ def sem_similarity(orig_embed, new_embed):
     original queries and new queries (sub-queries / rephrased) 
 
     Args: 
-    orig_embed: average embedding of top-k documents retrieved by original 
-    new_embed: average embedding of top-k documents retrieved by reformed queries 
+    orig_embed: embedding of top-k documents retrieved by original 
+    new_embed: embedding of top-k documents retrieved by reformed queries 
     """
 
 
