@@ -33,6 +33,21 @@ def sem_similarity(orig_embed, new_embed):
     orig_embed: embedding of top-k documents retrieved by original 
     new_embed: embedding of top-k documents retrieved by reformed queries 
     """
+    avg_orig = avg_embedding(orig_embed)
+    avg_new = avg_embedding(new_embed)
+
+    if not avg_orig or not avg_new:
+        return 1.0 
+
+    avg_product = sum(a * b for a, b in zip(avg_orig, avg_new))
+    mag_orig = magnitude(avg_orig)
+    mag_new = magnitude(avg_new)
+
+    if mag_orig == 0 or mag_new == 0:
+        return 1.0
+
+    cosine_sim = dot_product / (mag_orig * mag_new)
+    return 1 - cosine_sim
 
 
 
@@ -40,6 +55,18 @@ def sem_similarity(orig_embed, new_embed):
 def avg_embedding(embeddings): 
     if not embeddings: 
         return []
+
+dimension = len(embeddings[0]) 
+avg_embedding = []
+
+for i in range(dimension): 
+    avg_value = sum(emb[i] for emb in embeddings) / len(embeddings)
+    avg_embedding.append(avg_value) 
+
+return avg_embedding 
+
+def magnitude(vec): 
+    return sum(x * x for x in vector) ** 0.5 
 
 
     
