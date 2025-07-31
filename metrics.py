@@ -28,6 +28,10 @@ def sem_similarity(orig_embed, new_embed):
     """
     Calculate the semantic similarity between the avereage embeddings of the top-k documents retrived from 
     original queries and new queries (sub-queries / rephrased) 
-    
 
+    Args: 
+    orig_embed: average embedding of top-k documents retrieved by original 
+    new_embed: average embedding of top-k documents retrieved by reformed queries 
     """
+
+
