@@ -22,4 +22,10 @@ def doc_overlap(original_set, new_set):
 return (len(intersect)) / (len(original_set)) * 100 
 
 
-def sem_similarity:
+def sem_similarity(orig_embed, new_embed): 
+    """
+    Calculate the semantic similarity between the avereage embeddings of the top-k documents retrived from 
+    original queries and new queries (sub-queries / rephrased) 
+    
+
+    """
