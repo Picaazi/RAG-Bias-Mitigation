@@ -1,5 +1,5 @@
 import numpy as np 
-from src.client import get_openai_embedding
+from client import get_openai_embedding
 from typing import List, Dict
 
 """Helper Functions"""
@@ -71,7 +71,7 @@ def sem_similarity(orig_embed, new_embed):
 def representation_variance(
     documents: List[str],  # List of document texts
     group_set: Dict[str, List[str]],  # Dictionary of bias-inducing groups and their labels
-    threshold: float = 0.7  # Similarity threshold tau
+    threshold: float = 0.8  # Similarity threshold tau
 ) -> float:
 
     # Step 1: Process Group Set G (flatten all labels)
@@ -105,6 +105,7 @@ def representation_variance(
     for label, count in document_mentions.items():
         if total_docs > 0:
             p_g[label] = count / total_docs
+    print(p_g)
 
     # Step 5: Calculate p̄ (average of all p(g))
     p_bar = sum(p_g.values()) / len(all_group_labels)
@@ -140,10 +141,10 @@ if __name__ == "__main__":
         "Politics": ["Conservative", "Democratic"]
     }
     
-    rep_var = calculate_representation_variance(
+    rep_var = representation_variance(
         documents=example_docs,
         group_set=example_group_set,
-        threshold=0.6
+        threshold=0.8
     )
     
     print(f"Representation Variance: {rep_var:.4f}")
