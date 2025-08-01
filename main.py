@@ -4,7 +4,6 @@ from src.rag_system import embed_documents
 import argparse
 import os
 
-
 def detect_bias(sub_questions):
                 """Detect bias in a list of sub-questions using GPT-based classification."""
                 bias_results = []
