@@ -49,7 +49,7 @@ def sem_similarity(orig_embed, new_embed):
     cosine_sim = dot_product / (mag_orig * mag_new)
     return 1 - cosine_sim
 
-
+def rep_var #Edits coming soon 
 
 """Extra Helper Functions"""
 def avg_embedding(embeddings): 
