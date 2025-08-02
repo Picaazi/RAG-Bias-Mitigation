@@ -19,7 +19,8 @@ def detect_bias(sub_questions):
 
 def decompose():
     query = input("Enter your query: ")
-    response = decompose_query(query)
+        
+    response = decompose_query(query, num_subquestions=-1)
 
     if response:
         # Detect and display bias classification
@@ -42,7 +43,7 @@ def rewrite_query(query):
             perturbed_queries.append(response.strip())
     
     return perturbed_queries
-                   
+                    
 def rag():
     """RAG functionality with document embedding and retrieval."""
     # Read documents (you may need to adjust the path/method based on your setup)
@@ -96,7 +97,7 @@ def main(mode):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RAG Bias Mitigation Tool")
     parser.add_argument("--mode", choices=["decompose", "rewrite", "rag"], required=True,
-                       help="Mode of operation: decompose, rewrite, or rag")
+                        help="Mode of operation: decompose, rewrite, or rag")
     
     args = parser.parse_args()
     main(args.mode)
