@@ -40,7 +40,7 @@ def rewrite_query(query):
         response = query_openai(prompt)
     if response: 
         perturbed_queries.append(response.strip())
-
+    return pertrubed_queries
                    
 def rag():
     """RAG functionality with document embedding and retrieval."""
