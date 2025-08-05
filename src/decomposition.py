@@ -1,4 +1,4 @@
-from .client import query_openai
+from client import query_openai
 
 def decompose_query(query, num_subquestions=-1):
     """
