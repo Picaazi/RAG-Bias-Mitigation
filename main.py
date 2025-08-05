@@ -4,23 +4,12 @@ from src.rag_system import embed_documents
 import argparse
 import os
 
-def detect_bias(sub_questions):
-                """Detect bias in a list of sub-questions using GPT-based classification."""
-                bias_results = []
-                
-                for q in sub_questions:
-                    bias_prompt = f"Analyze the following question for demographic bias (gender, race, age, etc.). Respond with 'BIASED' if it contains demographic bias, or 'NEUTRAL' if it doesn't: {q}"
-                    bias_result = query_openai(bias_prompt)
-                    
-                    is_biased = bias_result and "BIASED" in bias_result.upper()
-                    bias_results.append(is_biased)
-                
-                return bias_results
+
 
 def decompose():
     query = input("Enter your query: ")
         
-    response = decompose_query(query, num_subquestions=-1)
+    response = decompose_query(query, num_subqs=-1)
 
     if response:
         # Detect and display bias classification
@@ -32,17 +21,7 @@ def decompose():
             else:
                 print(f"    {i}. NEUTRAL: {q}")
 
-"""Rewrite/perturb query into neutral phrasing"""
-def rewrite_query(query): 
-    perturbed_queries = []
-    
-    for q in query: 
-        prompt = f"Rephrase the query to remove bias-inducing phrasing while maintaining the core contents and a neutral stance/viewpoint: {q}"
-        response = query_openai(prompt)
-        if response: 
-            perturbed_queries.append(response.strip())
-    
-    return perturbed_queries
+
                     
 def rag():
     """RAG functionality with document embedding and retrieval."""

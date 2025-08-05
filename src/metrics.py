@@ -80,7 +80,7 @@ def representation_variance(
         all_group_labels.extend(category)
     
     # Step 2: Embed each label in set G
-    group_embeddings = [get_openai_embedding(label) for label in all_group_labels]
+    group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
         
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}

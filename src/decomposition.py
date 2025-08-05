@@ -1,6 +1,6 @@
 from client import query_openai
 
-def decompose_query(query, num_subquestions=-1):
+def decompose_query(query, num_subqs=-1):
     """
     Decompose a complex query into smaller sub-questions.
     
@@ -12,7 +12,7 @@ def decompose_query(query, num_subquestions=-1):
         list: List of sub-questions
     """
     
-    if num_subquestions == -1:
+    if num_subqs == -1:
         prompt = f"""
         Decompose the following complex question into the minimum number of essential, non-redundant sub-questions that would help answer the original question comprehensively.
         Each sub-question should be distinct and not overlap with others.
@@ -23,12 +23,12 @@ def decompose_query(query, num_subquestions=-1):
         """
     else:
         prompt = f"""
-        Decompose the following complex question into {num_subquestions} smaller, more specific sub-questions that would help answer the original question comprehensively.
+        Decompose the following complex question into {num_subqs} smaller, more specific sub-questions that would help answer the original question comprehensively.
         Each sub-question should be distinct and not overlap with others.
         
         Original question: {query}
         
-        Please provide exactly {num_subquestions} sub-questions, each on a new line, numbered 1-{num_subquestions}.
+        Please provide exactly {num_subqs} sub-questions, each on a new line, numbered 1-{num_subqs}.
         """
 
     response = query_openai(prompt)
