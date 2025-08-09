@@ -1,0 +1,2 @@
+This is a rag example.
+Nothing is here but just to check the code call run smoothly.

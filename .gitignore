@@ -217,3 +217,6 @@ marimo/_lsp/
 __marimo__/
 
 .DS_Store
+
+debiasing-rag/
+.DS_Store
