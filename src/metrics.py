@@ -116,6 +116,9 @@ def representation_variance(
     return variance
 
 
+### Add correctness score
+
+
 # Example usage with a mock embedding model:
 if __name__ == "__main__":
     # Mock embedding model (in practice, use OpenAI, SentenceBERT, etc.)

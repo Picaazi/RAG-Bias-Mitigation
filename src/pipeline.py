@@ -23,7 +23,7 @@ def run_pipeline():
         sub_qs = decompose_query(d)
         sub_qs_biased = detect_bias(sub_qs)
         
-        
+        ### Only decomposition and only rewriting
         for j in range(len(sub_qs)):
             if sub_qs_biased[j]:
                 print(f"Sub-question {j+1} is biased: {sub_qs[j]}")
