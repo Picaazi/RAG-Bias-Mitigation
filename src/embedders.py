@@ -7,13 +7,22 @@ from sentence_transformers import SentenceTransformer
 
 class Embedder:
     def __init__(self, model_name="BAAI/bge-m3", use_flagmodel=True, cache_path=None, device="cpu"):
+        """
+        Initialize Embedder.
+        :param model_name: Name of the embedding model
+        :param use_flagmodel: If True, use FlagEmbedding; else SentenceTransformer
+        :param cache_path: Path for caching embeddings
+        :param device: 'cpu' or 'cuda'
+        """
         self.model_name = model_name
         self.use_flagmodel = use_flagmodel
         self.cache_path = cache_path
         self.device = device
 
         if use_flagmodel:
-            self.model = FlagModel(model_name, query_instruction_for_retrieval="Represent this query for retrieval:", use_fp16=False)
+            self.model = FlagModel(model_name, 
+                                   query_instruction_for_retrieval="Represent this query for retrieval:",
+                                   use_fp16=False)
             self.encode_corpus = self._encode_corpus_flag
             self.encode_queries = self._encode_queries_flag
             self.dim = None
@@ -44,6 +53,9 @@ class Embedder:
         return emb
 
     def load_or_build_embeddings(self, texts: List[str], cache_path: str = None, force_recompute: bool = False):
+        """
+        Load embeddings from cache or build them.
+        """
         cache_path = cache_path or self.cache_path
         if cache_path and os.path.exists(cache_path) and not force_recompute:
             with open(cache_path, "rb") as f:
