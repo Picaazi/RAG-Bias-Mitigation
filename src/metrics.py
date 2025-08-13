@@ -116,8 +116,32 @@ def representation_variance(
     return variance
 
 
-### Add correctness score
-
+def get_correctness_score(predictions, answers, queries, judge):
+    print("\nGPT is judging\n")
+    scores = []
+    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+    for query, prediction, answer in tqdm(zip(queries, predictions, answers)):
+        prompt = f"""QUESTION: {query}
+            ANSWER: {answer}
+            PREDICTION: {prediction}      
+            Given this triplet of QUESTION, ANSWER, and PREDICTION, does any information in the PREDICTION align with the ANSWER or does any reasoning in the PREDICTION lead to the ANSWER? (YES/NO)"""
+    
+        messages = [{"role": "user", "content": prompt}]
+        chat_completion = client.chat.completions.create(
+        messages=messages,
+        model=judge,
+        temperature=0,
+        n=1,
+        )
+        
+        response = chat_completion.choices[0].message.content
+        if response.lower() == "yes":
+            scores.append(1)
+        else:
+            scores.append(0)
+        
+    print(f"\nGPT Judge Score: {round(sum(scores) / len(scores), 2)}\n")
+    return scores
 
 # Example usage with a mock embedding model:
 if __name__ == "__main__":
