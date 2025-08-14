@@ -5,6 +5,7 @@ from bias_detection import detect_bias
 from metrics import doc_overlap, sem_similarity, representation_variance
 import bm25s
 import pandas as pd
+from client import get_openai_embedding
 
 def get_retrieval_results(question, docs, k=4, mode="None"):
 
@@ -69,12 +70,12 @@ def pipeline(questions, docs, mode="None"):
         elif mode == "both":
             results, scores = get_retrieval_results(q, docs, mode="both")
             
-        base_embed = embed_documents(base_result)
-        results_embed = embed_documents(results)
+        base_embed = [get_openai_embedding(doc) for doc in base_result]
+        results_embed = [get_openai_embedding(doc) for doc in results]
         # Calculate metrics
         overlap_scores.append(doc_overlap(base_result, results))
         sem_scores.append(sem_similarity(base_embed, results_embed))
-        rep_variance_scores.append(representation_variance(results, group_set=group_set))
+        # rep_variance_scores.append(representation_variance(results, group_set=group_set))
 
     # Save the results as csv
     results_df = pd.DataFrame({
