@@ -9,51 +9,41 @@ from client import get_openai_embedding
 from retriever import Retriever
 from embedders import Embedder
 
-def get_retrieval_results(question, docs, k=4, mode="None"):
-    # Use BM25 as an example for retrieval
-    retriever = bm25s.BM25(corpus=docs)
-    retriever.index(bm25s.tokenize(docs))
-    questions = []
-    if mode == "decompose":
-        print("Decomposed sub-queries:")
-        sub_qs = decompose_query(question)
-        for j, sub_q in enumerate(sub_qs):
-            print(f"Sub-query {j+1}: {sub_q}")
-        results, scores = retriever.retrieve(bm25s.tokenize(sub_qs), k=k)
-        questions.extend(sub_qs)
-    elif mode == "rewrite":
-        print("Rewriting sub-queries:")
-        new_q = rewrite_query(question)
-        print(f"Original query: {question}")
-        print(f"Rephrased query: {new_q[0]}")
-        results, scores = retriever.retrieve(bm25s.tokenize(new_q), k=k)
-        questions.extend(new_q)
-    elif mode == "both":
-        print("Decomposing and rewriting sub-queries:")
-        sub_qs = decompose_query(question)
-        sub_qs_biased = detect_bias(sub_qs)
-        for j, sub_q in enumerate(sub_qs):
-            if sub_qs_biased[j]:
-                new_q = rewrite_query(sub_q)
-                print(f"Sub-query {j+1} is biased: {sub_q}")
-                print(f"Rephrased to neutral: {new_q}")
-                sub_qs[j] = new_q[0]
-            else:
-                print(f"Sub-query {j+1} is neutral: {sub_q}")
-        results, scores = retriever.retrieve(bm25s.tokenize(sub_qs), k=k)
-        questions.extend(sub_qs)
-    elif mode == "None":
-        print("No modification will be made.")
-        results, scores = retriever.retrieve(bm25s.tokenize(q), k=k)
-        questions.append(q)
-    else:
-        raise ValueError("Invalid mode. Choose from 'decompose', 'rewrite', 'both', or 'None'.")
+def pipeline(questions, docs, k=5, mode="Decompose"):
+    '''
+    Processes a set of questions and documents using different query modification strategies
+    and evaluates the retrieval performance.
+    This function implements a document retrieval pipeline that can decompose queries into
+    sub-queries, rewrite queries to reduce bias, or combine both approaches. It compares
+    the results against baseline retrieval and computes various similarity metrics.
+    Args:
+        questions (list): List of input questions/queries to process
+        docs (list): List of document collections corresponding to each question
+        k (int, optional): Number of top documents to retrieve. Defaults to 5.
+        mode (str, optional): Processing mode - "decompose" for query decomposition,
+                             "rewrite" for query rewriting, "both" for decomposition
+                             with bias detection and rewriting. Defaults to "Decompose".
+    Returns:
+        None: Results are saved to CSV file in results/ directory
+    Raises:
+        ValueError: If mode is not one of "decompose", "rewrite", or "both"
+    Output Files:
+        Creates a CSV file "results/results_{mode}.csv" containing:
+        - Original questions
+        - Base retrieval results
+        - Final processed results
+        - Document overlap scores
+        - Semantic similarity scores
+        - Representation variance scores (placeholder)
+    Note:
+        The function prints progress information during execution and requires
+        various utility functions (decompose_query, rewrite_query, detect_bias)
+        and classes (Embedder, Retriever) to be available in scope.
+    '''
+    
+    if mode not in ["decompose", "rewrite", "both"]:
+        raise ValueError("Invalid mode. Choose from 'decompose', 'rewrite', or 'both'.")
 
-    for result, score in zip(results, scores):
-            print(f"    {result} (Score: {score})")           
-    return questions, results, scores
-
-def pipeline(questions, docs, k=5, mode="None"):
     # embed mode?
     overlap_scores = []
     sem_scores = []
@@ -75,6 +65,7 @@ def pipeline(questions, docs, k=5, mode="None"):
         print("Getting base result")
         base_result = retriever.retrieve(bm25s.tokenize(q), k=k)
         
+        result = []
         if mode == "decompose":
             print("Decomposed sub-queries:")
             sub_qs = decompose_query(q)
@@ -141,4 +132,7 @@ if __name__ == "__main__":
         d = train.iloc[i]
         docs= [d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]]
         train_docs.append(docs)
-    pipeline(train_questions, train_docs, mode="None")
+    pipeline(train_questions, train_docs, mode="rewrite")
+    # decompose method is not finished, not sure how to retrieve document by many sub-queries
+    # same for method both
+    # rewrite method is debugging
