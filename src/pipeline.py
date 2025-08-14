@@ -83,7 +83,7 @@ def pipeline(questions, docs, mode="None"):
         "sem_score": sem_scores,
         "rep_variance_score": rep_variance_scores
     })
-    results_df.to_csv(f"results_{mode}.csv", index=False)
+    results_df.to_csv(f"results/results_{mode}.csv", index=False)
 
 
 if __name__ == "__main__":
