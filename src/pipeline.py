@@ -1,5 +1,5 @@
 import data_reading
-from decomposition import decompose_query
+from decomposition import decompose_query, combine_queries
 from rewriting import rewrite_query
 from bias_detection import detect_bias
 from metrics import doc_overlap, sem_similarity, representation_variance
@@ -71,7 +71,8 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
             sub_qs = decompose_query(q)
             for j, sub_q in enumerate(sub_qs):
                 print(f"Sub-query {j+1}: {sub_q}")
-            result = retriever.retrieve(query=sub_qs, top_k=k)
+            combined_qs = combine_queries(sub_qs)
+            result = retriever.retrieve(query=combined_qs, top_k=k)
             final_questions.append(sub_qs)
         elif mode == "rewrite":
             print("Rewriting sub-queries:")
@@ -92,7 +93,8 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
                     sub_qs[j] = new_q[0]
                 else:
                     print(f"Sub-query {j+1} is neutral: {sub_q}")
-            result = retriever.retrieve(query=sub_qs, top_k=k)
+            combined_qs = combine_queries(sub_qs)
+            result = retriever.retrieve(query=combined_qs, top_k=k)
             final_questions.append(sub_qs)
         
         final_results.append(result)
