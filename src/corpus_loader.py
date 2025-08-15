@@ -6,6 +6,7 @@ import json
 import ir_datasets
 
 
+
 # --- Output folder in repo ---
 output_folder = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -98,10 +99,37 @@ print(f"FEVER CSV saved at {train_csv_path}")
 
 ##Natural Questions
 
-#subset 
-nq_train = load_dataset("natural_questions", "default", split="train[:1000]")
-df_train = pd.DataFrame(nq_train)
+# #subset 
+# nq_train = load_dataset("natural_questions", "default", split="train[:1000]")
+# df_train = pd.DataFrame(nq_train)
+# output_folder = os.path.join(os.path.dirname(__file__), "../corpus_data")
+# os.makedirs(output_folder, exist_ok=True)
+# csv_path = os.path.join(output_folder, "nq_train.csv")
+# df_train.to_csv(csv_path, index=False, encoding="utf-8")
+
+
+# #Wikipedia - HuggingFace https://huggingface.co/datasets/wikimedia/wikipedia
+wiki_ds = load_dataset("wikimedia/wikipedia", "20231101.en", split="train", streaming=True)
+
+# Prepare output folder
 output_folder = os.path.join(os.path.dirname(__file__), "../corpus_data")
 os.makedirs(output_folder, exist_ok=True)
-csv_path = os.path.join(output_folder, "nq_train.csv")
-df_train.to_csv(csv_path, index=False, encoding="utf-8")
+
+# Collect 100 entries
+rows = []
+for i, article in enumerate(wiki_ds):
+    if i >= 100:  # limit to 100 entries
+        break
+    rows.append({
+        "id": article.get("id", ""),
+        "url": article.get("url", ""),
+        "title": article.get("title", ""),
+        "text": article.get("text", "")
+    })
+
+# Save to CSV
+df = pd.DataFrame(rows)
+csv_path = os.path.join(output_folder, "wiki_small.csv")
+df.to_csv(csv_path, index=False)
+
+print(f"Saved {len(rows)} wiki entries to {csv_path}")
