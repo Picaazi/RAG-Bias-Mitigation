@@ -26,13 +26,7 @@ class Retriever:
         else:
             raise ValueError(f"Unknown retrieval method: {method}")
 
-    def retrieve(self, query: str, top_k=5) -> Dict:
-        """
-        Retrieve top-k documents for the given query.
-        :param query: Query string
-        :param top_k: Number of results to return
-        :return: Dictionary with query and ranked results
-        """
+    def retrieve(self, query: str, top_k=5):
         if self.method == "dense":
             q_emb = self.embedder.encode_queries([query])[0]
             scores = np.dot(self.embeddings, q_emb) / (
@@ -40,10 +34,11 @@ class Retriever:
             )
         else:
             scores = self.bm25.get_scores(query.split())
-
+    
         top_idx = np.argsort(scores)[::-1][:top_k]
-        results = [
+        return [
             {"rank": i + 1, "score": float(scores[idx]), "doc": self.docs[idx], "doc_id": idx}
             for i, idx in enumerate(top_idx)
-        ]
-        return {"query": query, "results": results}
+    ]
+        
+
