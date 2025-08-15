@@ -1,5 +1,5 @@
 import pandas as pd
-import os 
+import os
 
 CORPUS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "corpus_data")
 
@@ -31,14 +31,22 @@ def read_msmarco_test_flat_data():
     msmarco_df = pd.read_csv(os.path.join(CORPUS_FOLDER, "msmarco_test_flat.csv"))
     return msmarco_df
 
+def read_wiki_data(): 
+    """
+    Reads Wiki documents from CSV file and returns the DataFrame.
+    """
+    wiki_df =  pd.read_csv(os.path.join(CORPUS_FOLDER, "wiki_small.csv"))
+    return wiki_df
+
 if __name__ == "__main__":
     sbic_df = read_sbic_data()
     bbc_df = read_bbc_news_data()
     fever_df = read_fever_train_data()
     msmarco_df = read_msmarco_test_flat_data()
+    wiki_df = read_wiki_data()
 
     print(sbic_df.head())
     print(bbc_df.head())
     print(fever_df.head())
-
     print(msmarco_df.head())
+    print(wiki_df.head())
