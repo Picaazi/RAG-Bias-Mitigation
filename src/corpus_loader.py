@@ -1,4 +1,3 @@
-
 from datasets import load_dataset
 import pandas as pd
 import os
@@ -60,6 +59,7 @@ def flatten_and_deduplicate(dataset):
 
 # print(f"MS MARCO CSVs saved in {output_folder}!")
 
+#################################################################################3
 
 #Helper function to flatten FEVER dataset and remove duplicates 
 def flatten_and_deduplicate_fever(dataset):
@@ -84,6 +84,9 @@ def flatten_and_deduplicate_fever(dataset):
     return df
 
 
+##########################################################################################
+
+
 # Load FEVER corpus
 fever_json_path = os.path.join(output_folder, "fever_data.jsonl")
 dataset = []
@@ -97,6 +100,10 @@ train_df.to_csv(train_csv_path, index=False)
 
 print(f"FEVER CSV saved at {train_csv_path}")
 
+
+
+############################################################### - edit 
+
 ##Natural Questions
 
 # #subset 
@@ -108,28 +115,41 @@ print(f"FEVER CSV saved at {train_csv_path}")
 # df_train.to_csv(csv_path, index=False, encoding="utf-8")
 
 
-# #Wikipedia - HuggingFace https://huggingface.co/datasets/wikimedia/wikipedia
-wiki_ds = load_dataset("wikimedia/wikipedia", "20231101.en", split="train", streaming=True)
 
-# Prepare output folder
-output_folder = os.path.join(os.path.dirname(__file__), "../corpus_data")
-os.makedirs(output_folder, exist_ok=True)
+#####################################################################################################################3
 
-# Collect 100 entries
-rows = []
-for i, article in enumerate(wiki_ds):
-    if i >= 100:  # limit to 100 entries
-        break
-    rows.append({
-        "id": article.get("id", ""),
-        "url": article.get("url", ""),
-        "title": article.get("title", ""),
-        "text": article.get("text", "")
-    })
 
-# Save to CSV
-df = pd.DataFrame(rows)
-csv_path = os.path.join(output_folder, "wiki_small.csv")
-df.to_csv(csv_path, index=False)
 
-print(f"Saved {len(rows)} wiki entries to {csv_path}")
+# # #Wikipedia - HuggingFace https://huggingface.co/datasets/wikimedia/wikipedia
+# wiki_ds = load_dataset("wikimedia/wikipedia", "20231101.en", split="train", streaming=True)
+
+# # Collect 100 entries
+# rows = []
+# for i, article in enumerate(wiki_ds):
+#     if i >= 100:  # limit to 100 entries
+#         break
+#     rows.append({
+#         "id": article.get("id", ""),
+#         "url": article.get("url", ""),
+#         "title": article.get("title", ""),
+#         "text": article.get("text", "")
+#     })
+
+# # Save to CSV
+# df = pd.DataFrame(rows)
+# csv_path = os.path.join(output_folder, "wiki_small.csv")
+# df.to_csv(csv_path, index=False)
+
+# print(f"Saved {len(rows)} wiki entries to {csv_path}")
+
+
+###############################################################################################################
+
+
+
+#PolNLI - https://huggingface.co/datasets/mlburnham/Pol_NLI/viewer/default/test?views%5B%5D=test
+pol_nli_test = load_dataset("mlburnham/Pol_NLI", split="test")
+df = pd.DataFrame(pol_nli_test)  
+csv_path = os.path.join(output_folder, "pol_nli_test.csv")
+df.to_csv(csv_path, index=False)  # no encoding needed
+print(f"Saved {len(df)} entries to {csv_path}")
