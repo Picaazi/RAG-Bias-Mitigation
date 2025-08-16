@@ -11,13 +11,25 @@ def main():
     cache_path = "embeddings.pkl"
 
     # Load example dataset
-    print("Loading dataset...")
-    islamQA = load_dataset("minhalvp/islamqa", split="train").to_pandas()
-    docs = islamQA["Full Answer"].dropna().tolist()
+    #!git clone https://github.com/danielkty/debiasing-rag
+    genderbiasQA_train = pd.read_csv("debiasing-rag/dataset/tasks/GenderBias-QA_train.csv")
+    genderbiasQA_test = pd.read_csv("debiasing-rag/dataset/tasks/GenderBias-QA_test.csv")
+    politicbiasQA_train = pd.read_csv("debiasing-rag/dataset/tasks/PoliticBias-QA_train.csv")
+    politicbiasQA_test = pd.read_csv("debiasing-rag/dataset/tasks/PoliticBias-QA_test.csv")
 
-    print(f"Loaded {len(docs)} documents. Initializing embedder...")
-    embedder = Embedder(model_name=model_name, use_flagmodel=True, cache_path=cache_path)
-    retr = Retriever(docs, method=method, embedder=embedder, embeddings_cache=cache_path)
+    #!git clone https://github.com/nyu-mll/BBQ
+    race_BBQ=pd.read_json("BBQ/data/Race_ethnicity.jsonl", lines=True)
+    religion_BBQ=pd.read_json("BBQ/data/Religion.jsonl", lines=True)
+    genderidentity_BBQ=pd.read_json("BBQ/data/Gender_identity.jsonl", lines=True)
+    age_BBQ=pd.read_json("BBQ/data/Age.jsonl", lines=True)
+
+    #!git clone https://github.com/helen-jiahe-zhao/BibleQA
+    bibleQA=pd.read_csv("BibleQA/data/bible_qa/bible_qa_train.csv", sep='\t')
+
+    islamQA= load_dataset("minhalvp/islamqa", split="train").to_pandas()
+    docs = islamQA["Full Answer"].dropna().tolist()+bibleQA["KJV_Verse"].dropna().tolist()+genderbiasQA_train["bias1-document1"].dropna().tolist()+genderbiasQA_train["bias1-document2"].dropna().tolist()+race_BBQ["context"].dropna().tolist()+religion_BBQ["context"].dropna().tolist()+\
+#genderidentity_BBQ["context"].dropna().tolist()+\
+#age_BBQ["context"].dropna().tolist()
 
     scorer = BiasScorer()
 
