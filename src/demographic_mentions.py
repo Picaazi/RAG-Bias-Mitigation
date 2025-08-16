@@ -1,6 +1,6 @@
 import os
 import re
-from retrieval import retrieve_top_docs
+from retrieval import retrieve
 from generation import generate_response
 
 Bias_groups = {
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     query = input("Enter your question: ")
 
     # Retrieve top documents
-    top_docs = retrieve_top_docs(query)
+    top_docs = retrieve(query)
 
     # Generating response
     print("\n--- LLM Response ---")
