@@ -1,9 +1,18 @@
 # run_retrieval.py
-import pandas as pd
+#pip install pyarrow
+#pip install openai
 from datasets import load_dataset
-from src.embedders import Embedder
-from src.retriever import Retriever
-from src.bias_scorer import BiasScorer
+import pandas as pd
+import numpy as np
+from rank_bm25 import BM25Okapi
+from typing import List, Dict, Sequence
+from FlagEmbedding import FlagModel
+import os
+import pickle
+from sentence_transformers import SentenceTransformer
+import openai
+from collections import defaultdict
+import re
 
 def main():
     method = "dense"
@@ -27,37 +36,39 @@ def main():
     bibleQA=pd.read_csv("BibleQA/data/bible_qa/bible_qa_train.csv", sep='\t')
 
     islamQA= load_dataset("minhalvp/islamqa", split="train").to_pandas()
-    docs = islamQA["Full Answer"].dropna().tolist()+bibleQA["KJV_Verse"].dropna().tolist()+genderbiasQA_train["bias1-document1"].dropna().tolist()+genderbiasQA_train["bias1-document2"].dropna().tolist()+race_BBQ["context"].dropna().tolist()+religion_BBQ["context"].dropna().tolist()+\
-#genderidentity_BBQ["context"].dropna().tolist()+\
-#age_BBQ["context"].dropna().tolist()
+    docs = islamQA["Full Answer"].dropna().tolist()+bibleQA["KJV_Verse"].dropna().tolist()+genderbiasQA_train["bias1-document1"].dropna().tolist()+genderbiasQA_train["bias1-document2"].dropna().tolist()+race_BBQ["context"].dropna().tolist()+religion_BBQ["context"].dropna().tolist()+genderidentity_BBQ["context"].dropna().tolist()+age_BBQ["context"].dropna().tolist()
 
-    scorer = BiasScorer()
+   
+    embedder = Embedder(model_name=model_name, use_flagmodel=True, cache_path=cache_path)
+    retriever = Retriever(docs, method=method, embedder=embedder, embeddings_cache=cache_path)
 
-    print("Ready for queries!")
     while True:
         q = input("Enter query (or 'exit'): ")
         if q.strip().lower() in ("exit", "quit"):
-            break
+                break
+        row = retriever.retrieve(q, top_k=5)
+        row["meta"] = {"embedder_info": embedder.info() if embedder else None}
 
-        # Retrieve docs
-        result = retr.retrieve(q, top_k=5)
-        top_docs = [hit["doc"] for hit in result["results"]]
-
-        # Simulate response (you can later replace with actual model output)
-        response = f"This is a placeholder response for query: {q}"
-
-        # Calculate bias score
-        bias_scores = scorer.score(response, top_docs)
-
-        print("\nQuery:", q)
-        print("\nResponse:", response)
+        #embed retrieved documents for analysis
+        if embedder:
+            retrieved_texts = [hit["doc"] for hit in row["results"]]
+            retrieved_embeddings = embedder.encode_corpus(retrieved_texts)
+            row["retrieved_embeddings"] = retrieved_embeddings.tolist()
+        response=generate_response(q,retrieved_texts)
+        bas=biasamplicationscore(retrieved_texts,response)
         print("\nTop results:")
-        for hit in result["results"]:
-            print(f"{hit['rank']}. score={hit['score']:.4f} id={hit['doc_id']}")
-            print(f"    {hit['doc'][:200]}...\n")
+        for hit in row["results"]:
+          print(f"{hit['rank']}. score={hit['score']:.4f} id={hit['doc_id']}")
+          print(f"    {hit['doc'][:200]}...\n")
+        print("\nGenerated Response:")
+        print(response)
+        print("\nBias analysis:")
+        for group, score in bas.items():
+          print(f"{group}: {score:+.3f}"
+                f" ( {'positive' if score>0 else 'negative' if score<0 else 'zero'})")
+        print("\n"+ "="*80+"\n")
 
-        print("\nBias Scores:", bias_scores)
-        print("-" * 60)
+
 
 if __name__ == "__main__":
     main()
