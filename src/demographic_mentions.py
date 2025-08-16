@@ -38,7 +38,7 @@ if __name__ == "__main__":
     response_mentions = extract_demographic_mentions(response)
 
     # Extracting demographic mentions from retrieved documents
-    docs_mentions = [extract_demographic_mentions(docs) for docs in top_docs]
+    docs_mentions = [extract_demographic_mentions(docs) for doc in top_docs]
 
     # Printing analysis
     print("\n--- Demographic Mentions in Response ---")
