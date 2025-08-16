@@ -3,11 +3,12 @@ import re
 from retrieval import retrieve_top_docs
 from generation import generate_response
 
-Bias_groups={
-    "Race": ["Black", "White", "Asian", "Latino"],
-    "Gender": ["Women", "Men", "Female", "Male","he","she"],
-    "Politics": ["Conservative", "Democrat", "Republican","Left claim","Right "],
-    "Religion": ["Christian", "Muslim", "Jewish", "Hindu"]
+Bias_groups = {
+    "Race": ["Black", "White","Mixed","Asian", "Latino","Middle-Eastern","Hispanic","Indigneous"],
+    "Gender": ["Women", "Men", "Female", "Male","He","She","They","Transgender","Queer","Non-binary"],
+    "Politics": ["Conservative", "Democrat", "Republican","Labour","Left claim","Right claim","Communist","Socialist"],
+    "Religion": ["Christian", "Muslim", "Jewish", "Hindu","Buddhism","Jainism"]
+    "Age":["Young","Old","Teenager","Young adult","Middle-aged","Elderly","Seniors","Juniors","Infant"]
 }
 
 def extract_demographic_mentions(text):
