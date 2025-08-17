@@ -1,23 +1,16 @@
 from src.decomposition import decompose_query
 from src.client import query_openai
+from src.rag_system import embed_documents
+import argparse
+import os
+import openai
 
+openai.api_key = "OPENAI KEY HERE"
 
-def detect_bias(sub_questions):
-                """Detect bias in a list of sub-questions using GPT-based classification."""
-                bias_results = []
-                
-                for q in sub_questions:
-                    bias_prompt = f"Analyze the following question for demographic bias (gender, race, age, etc.). Respond with 'BIASED' if it contains demographic bias, or 'NEUTRAL' if it doesn't: {q}"
-                    bias_result = query_openai(bias_prompt)
-                    
-                    is_biased = bias_result and "BIASED" in bias_result.upper()
-                    bias_results.append(is_biased)
-                
-                return bias_results
-
-if __name__ == "__main__":
+def decompose():
     query = input("Enter your query: ")
-    response = decompose_query(query)
+        
+    response = decompose_query(query, num_subqs=-1)
 
     if response:
         # Detect and display bias classification
@@ -28,4 +21,26 @@ if __name__ == "__main__":
                 print(f"    {i}. BIASED: {q}")
             else:
                 print(f"    {i}. NEUTRAL: {q}")
+
+def generate_response(query, top_docs):
+    context_text = "\n\n".join([f"{i+1}. {doc}" for i, doc in enumerate(top_docs)])
+    prompt = f"""
+You are a helpful assistant. Use the following context to answer the question accurately.
+
+Question: {query}
+
+Context:
+{context_text}
+
+Answer in detail:
+"""
+    response = openai.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a knowledgeable assistant."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3
+    )
+    return response.choices[0].message.content.strip()
 
