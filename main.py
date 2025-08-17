@@ -5,7 +5,7 @@ import argparse
 import os
 import openai
 
-openai.api_key = "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"
+openai.api_key = "OPENAI KEY HERE"
 
 def decompose():
     query = input("Enter your query: ")
