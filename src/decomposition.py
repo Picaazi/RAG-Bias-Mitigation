@@ -1,6 +1,6 @@
 from client import query_openai
 
-def decompose_query(query, num_subqs=-1):
+def decompose_query(query: str, num_subqs=-1):
     """
     Decompose a complex query into smaller sub-questions.
     
@@ -50,3 +50,21 @@ def decompose_query(query, num_subqs=-1):
                 sub_questions.append(question)
 
     return sub_questions[:len(sub_questions)]
+
+def combine_queries(sub_qs):
+    """
+    Combine a list of sub-questions into a single query.
+    
+    Args:
+        sub_qs (List[str]): The list of sub-questions to combine
+    
+    Returns:
+        str: The combined query
+    """
+    
+    combine_queries = f"""
+    Answer the following sub-questions:
+
+    {chr(10).join(f"{i+1}. {query}" for i, query in enumerate(sub_qs))}
+    """
+    return combine_queries

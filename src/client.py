@@ -10,7 +10,7 @@ def query_openai(query, model="gpt-3.5-turbo"):
     Call the OpenAI API with the given query and return the response.
     Requires the OPENAI_KEY environment variable to be set.
     """
-    api_key = os.getenv("OPENAI_KEY")
+    api_key = os.environ.get("OPENAI_KEY")
     if not api_key:
         print("OPENAI_KEY environment variable not set.")
         return None
@@ -37,7 +37,7 @@ def get_openai_embedding(text, model="text-embedding-ada-002"):
     Get OpenAI embedding for the given text.
     Requires the OPENAI_KEY environment variable to be set.
     """
-    api_key = os.getenv("OPENAI_KEY")
+    api_key = os.environ.get("OPENAI_KEY")
     if not api_key:
         print("OPENAI_KEY environment variable not set.")
         return None
