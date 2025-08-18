@@ -51,7 +51,7 @@ def decompose_query(query: str, num_subqs=-1):
 
     return sub_questions[:len(sub_questions)]
 
-def combine_queries(sub_qs: List[str]):
+def combine_queries(sub_qs):
     """
     Combine a list of sub-questions into a single query.
     

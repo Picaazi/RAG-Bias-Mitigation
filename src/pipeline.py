@@ -63,7 +63,7 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         print(f"Processing question {i+1}/{len(questions)}: {q}")
         retriever = Retriever(d, embedder=eb)
         print("Getting base result")
-        base_result = retriever.retrieve(bm25s.tokenize(q), k=k)
+        base_result = retriever.retrieve(bm25s.tokenize(q), top_k=k)
         
         result = []
         if mode == "decompose":

@@ -70,3 +70,6 @@ class Embedder:
 
     def info(self):
         return {"model_name": self.model_name, "use_flagmodel": self.use_flagmodel, "dim": self.dim}
+
+if __name__ == "__main__":
+    pass
