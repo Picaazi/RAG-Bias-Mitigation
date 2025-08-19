@@ -33,13 +33,14 @@ class Retriever:
         :param top_k: Number of results to return
         :return: Dictionary with query and ranked results
         """
+        print(f"top {top_k} results for query: {query}")
         if self.method == "dense":
             q_emb = self.embedder.encode_queries([query])[0]
             scores = np.dot(self.embeddings, q_emb) / (
                 np.linalg.norm(self.embeddings, axis=1) * np.linalg.norm(q_emb) + 1e-10
             )
         else:
-            scores = self.bm25.get_scores(query.split())
+            scores = self.bm25.get_scores(query)
 
         top_idx = np.argsort(scores)[::-1][:top_k]
         results = [

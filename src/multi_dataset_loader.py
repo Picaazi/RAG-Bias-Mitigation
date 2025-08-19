@@ -1,7 +1,7 @@
 # src/loaders/multi_dataset_loader.py
 import pandas as pd
 from datasets import load_dataset
-from src.db import get_connection
+from db import get_connection
 
 def insert_docs(source, texts):
     with get_connection() as conn:

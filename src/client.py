@@ -10,7 +10,7 @@ def query_openai(query, model="gpt-3.5-turbo"):
     Call the OpenAI API with the given query and return the response.
     Requires the OPENAI_KEY environment variable to be set.
     """
-    api_key = os.environ.get("OPENAI_KEY")
+    api_key = os.environ.get("OPENAI_KEY") #Use the command "export OPENAI_KEY='ur-api-key'" in terminal
     if not api_key:
         print("OPENAI_KEY environment variable not set.")
         return None

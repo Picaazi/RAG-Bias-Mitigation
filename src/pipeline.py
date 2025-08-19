@@ -5,7 +5,8 @@ from bias_detection import detect_bias
 from metrics import doc_overlap, sem_similarity, representation_variance
 import bm25s
 import pandas as pd
-from client import get_openai_embedding
+import multi_dataset_loader as dataloader
+import corpus_load_read
 from retriever import Retriever
 from embedders import Embedder
 
@@ -61,9 +62,9 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         q = questions[i]
         d = docs[i]
         print(f"Processing question {i+1}/{len(questions)}: {q}")
-        retriever = Retriever(d, embedder=eb)
+        retriever = Retriever(d, embedder=eb, method="bm25")
         print("Getting base result")
-        base_result = retriever.retrieve(bm25s.tokenize(q), top_k=k)
+        base_result = retriever.retrieve(q, top_k=min(k, len(d)))
         
         result = []
         if mode == "decompose":
@@ -72,14 +73,15 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
             for j, sub_q in enumerate(sub_qs):
                 print(f"Sub-query {j+1}: {sub_q}")
             combined_qs = combine_queries(sub_qs)
-            result = retriever.retrieve(query=combined_qs, top_k=k)
+            result = retriever.retrieve(query=combined_qs, top_k=min(k, len(d)))
             final_questions.append(sub_qs)
         elif mode == "rewrite":
             print("Rewriting sub-queries:")
             new_q = rewrite_query([q])
             print(f"Original query: {q}")
-            print(f"Rephrased query: {new_q}")
-            result = retriever.retrieve(query=new_q, top_k=k)
+            print(f"Rephrased query: {new_q[0]}")
+            result = retriever.retrieve(query=new_q[0], top_k=min(k, len(d)))
+            
             final_questions.append(new_q)
         elif mode == "both":
             print("Decomposing and rewriting sub-queries:")
@@ -94,17 +96,18 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
                 else:
                     print(f"Sub-query {j+1} is neutral: {sub_q}")
             combined_qs = combine_queries(sub_qs)
-            result = retriever.retrieve(query=combined_qs, top_k=k)
+            result = retriever.retrieve(query=combined_qs, top_k=min(k, len(d)))
             final_questions.append(sub_qs)
-        
-        final_results.append(result)
-        base_results.append(base_result)
+        final_docs = [d["doc"] for d in result]
+        base_docs = [d["doc"] for d in base_result]
+        final_results.append(final_docs)
+        base_results.append(base_docs)
 
-        base_embed = eb.encode_queries(base_result)
-        result_embed = eb.encode_queries(result)
+        base_embed = eb.encode_queries(base_docs)
+        result_embed = eb.encode_queries(final_docs)
         # Calculate metrics
-        overlap_scores.append(doc_overlap(base_result, result))
-        sem_scores.append(sem_similarity(base_embed, result_embed))
+        overlap_scores.append(doc_overlap(base_docs, final_docs))
+        sem_scores.append(sem_similarity(base_embed, result_embed)) # Why are we calling this as Semantic Similarity? Higher of this means more divergence???
         # rep_variance_scores.append(representation_variance(results, group_set=group_set))
 
     # Save the results as csv
@@ -113,13 +116,29 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         "base_result": base_results,
         "final_result": final_results,
         "overlap_score": overlap_scores,
-        "sem_score": sem_scores,
-        "rep_variance_score": rep_variance_scores
+        "sem_score": sem_scores
+        # "rep_variance_score": rep_variance_scores
     })
     results_df.to_csv(f"results/results_{mode}.csv", index=False)
 
+
+def data_router(name, ):
+   
+    data_dict = {
+        "gender_bias": dataloader.load_gender_bias,
+        "politics_bias": dataloader.load_politics_bias,
+        "bbq": dataloader.load_bbq_datasets,
+        "bibleqa": dataloader.load_bibleqa,
+        "islamqa": dataloader.load_islamqa
+    }
+
+    if name not in data_dict.keys():
+        raise ValueError(f"Unknown dataset: {name}")
+
+    return data_dict[name]()
+
+
 if __name__ == "__main__":
-    
     # Step 1: Dataset loading (one-by-one /all) - > queries answers and corpus
     print("Loading datasets...")
     train, test = data_reading.read_gender_bias_data()
@@ -127,6 +146,7 @@ if __name__ == "__main__":
     print(f"Number of training samples: {len(train)}")
     print(f"Number of testing samples: {len(test)}")
 
+    train = train[:5]
     # Put training data set into a list of questions and a list of documents
     train_questions = train["question"].tolist()
     train_docs = []
@@ -135,6 +155,5 @@ if __name__ == "__main__":
         docs= [d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]]
         train_docs.append(docs)
     pipeline(train_questions, train_docs, mode="rewrite")
-    # decompose method is not finished, not sure how to retrieve document by many sub-queries
-    # same for method both
-    # rewrite method is debugging
+    
+    # all pipeline is in debugging progress

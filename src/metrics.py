@@ -4,7 +4,7 @@ from typing import List, Dict
 
 """Helper Functions"""
 def avg_embedding(embeddings): 
-    if not embeddings: 
+    if len(embeddings) == 0: 
         return []
 
     dimension = len(embeddings[0]) 
