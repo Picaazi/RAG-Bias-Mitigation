@@ -1,6 +1,8 @@
 import numpy as np 
 from client import get_openai_embedding
 from typing import List, Dict
+from embedders import Embedder
+
 
 """Helper Functions"""
 def avg_embedding(embeddings): 
@@ -71,6 +73,7 @@ def sem_similarity(orig_embed, new_embed):
 def representation_variance(
     documents: List[str],  # List of document texts
     group_set: Dict[str, List[str]],  # Dictionary of bias-inducing groups and their labels
+    embedder: Embedder, # Embedder instance for text embeddings
     threshold: float = 0.8  # Similarity threshold tau
 ) -> float:
 
@@ -80,14 +83,14 @@ def representation_variance(
         all_group_labels.extend(category)
     
     # Step 2: Embed each label in set G
-    group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
-        
+    group_embeddings = [embedder.model.encode(label, convert_to_numpy=True) for label in all_group_labels] ### TO DO: Test other embedding models
+
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}
     total_docs = len(documents)
     
     for doc in documents:
-        doc_embedding = get_openai_embedding(doc)
+        doc_embedding = embedder.model.encode(doc, convert_to_numpy=True)
         
         for i, label in enumerate(all_group_labels):
             # Calculate cosine similarity
