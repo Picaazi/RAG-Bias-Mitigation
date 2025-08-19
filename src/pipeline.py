@@ -125,37 +125,47 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
     print(f"Results saved to results/results_{mode}_{timestamp}.csv")
 
 
-def data_router(name, ):
-    data_dict = {
-        "gender_bias": dataloader.load_gender_bias,
-        "politics_bias": dataloader.load_politics_bias,
-        "bbq": dataloader.load_bbq_datasets,
-        "bibleqa": dataloader.load_bibleqa,
-        "islamqa": dataloader.load_islamqa
-    }
-
-    if name not in data_dict.keys():
+def data_router(name):
+    if name not in ["gender_bias", "politics_bias", "bbq", "bibleqa", "islamqa"]:
         raise ValueError(f"Unknown dataset: {name}")
 
-    return data_dict[name]()
+    if name == "gender_bias":
+        train, test = dataloader.load_gender_bias()
+        data = pd.concat([train, test], ignore_index=True)
+        questions = data["question"].tolist()
+        docs = []
+        for i in range(len(data)):
+            d = data.iloc[i]
+            docs= [d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]]
+            docs.append(docs)
+        return questions, docs
+    elif name == "politics_bias":
+        train, test = dataloader.load_politics_bias()
+        data = pd.concat([train, test], ignore_index=True)
+        questions = data["question"].tolist()
+        docs = []
+        for i in range(len(data)):
+            d = data.iloc[i]
+            docs= [d["left_claim"], d["right_claim"]]
+            docs.append(docs)
+        return questions, docs
+    elif name == "bbq":
+        # combine all bbq dataset, return question and docs
+        return dataloader.load_bbq_datasets()
+    elif name == "bibleqa":
+        # combine all bbq dataset, return question and docs
+        return dataloader.load_bibleqa()
+    elif name == "islamqa":
+        # combine all bbq dataset, return question and docs
+        return dataloader.load_islamqa()
+
 
 
 if __name__ == "__main__":
-    # Step 1: Dataset loading (one-by-one /all) - > queries answers and corpus
-    print("Loading datasets...")
-    train, test = data_reading.read_gender_bias_data()
-    print("Data loaded successfully.")
-    print(f"Number of training samples: {len(train)}")
-    print(f"Number of testing samples: {len(test)}")
-
-    train = train[:5]
-    # Put training data set into a list of questions and a list of documents
-    train_questions = train["question"].tolist()
-    train_docs = []
-    for i in range(len(train)):
-        d = train.iloc[i]
-        docs= [d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]]
-        train_docs.append(docs)
-    pipeline(train_questions, train_docs, mode="both")
     
-    # all pipeline is in debugging progress
+    print("Loading datasets...")
+    questions, docs = data_router("gender_bias")
+    q = questions[:5]
+    d = docs[:5]
+    
+    pipeline(q, d, mode="both")
