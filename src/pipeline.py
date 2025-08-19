@@ -78,7 +78,7 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
             print("Rewriting sub-queries:")
             new_q = rewrite_query([q])
             print(f"Original query: {q}")
-            print(f"Rephrased query: {new_q[0]}")
+            print(f"Rephrased query: {new_q}")
             result = retriever.retrieve(query=new_q, top_k=k)
             final_questions.append(new_q)
         elif mode == "both":
