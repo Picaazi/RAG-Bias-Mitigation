@@ -9,6 +9,7 @@ import multi_dataset_loader as dataloader
 import corpus_load_read
 from retriever import Retriever
 from embedders import Embedder
+import time
 
 def pipeline(questions, docs, k=5, mode="Decompose"):
     '''
@@ -62,7 +63,7 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         q = questions[i]
         d = docs[i]
         print(f"Processing question {i+1}/{len(questions)}: {q}")
-        retriever = Retriever(d, embedder=eb, method="bm25")
+        retriever = Retriever(d, embedder=eb)
         print("Getting base result")
         base_result = retriever.retrieve(q, top_k=min(k, len(d)))
         
@@ -108,7 +109,7 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         # Calculate metrics
         overlap_scores.append(doc_overlap(base_docs, final_docs))
         sem_scores.append(sem_similarity(base_embed, result_embed)) # Why are we calling this as Semantic Similarity? Higher of this means more divergence???
-        rep_variance_scores.append(representation_variance(final_docs, group_set=group_set))
+        rep_variance_scores.append(representation_variance(final_docs, embedder=eb))
 
     # Save the results as csv
     results_df = pd.DataFrame({
@@ -116,14 +117,15 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         "base_result": base_results,
         "final_result": final_results,
         "overlap_score": overlap_scores,
-        "sem_score": sem_scores
-        # "rep_variance_score": rep_variance_scores
+        "sem_score": sem_scores,
+        "rep_variance_score": rep_variance_scores
     })
-    results_df.to_csv(f"results/results_{mode}.csv", index=False)
+    timestamp = int(time.time())
+    results_df.to_csv(f"results/results_{mode}_{timestamp}.csv", index=False)
+    print(f"Results saved to results/results_{mode}_{timestamp}.csv")
 
 
 def data_router(name, ):
-   
     data_dict = {
         "gender_bias": dataloader.load_gender_bias,
         "politics_bias": dataloader.load_politics_bias,
@@ -154,6 +156,6 @@ if __name__ == "__main__":
         d = train.iloc[i]
         docs= [d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]]
         train_docs.append(docs)
-    pipeline(train_questions, train_docs, mode="rewrite")
+    pipeline(train_questions, train_docs, mode="both")
     
     # all pipeline is in debugging progress

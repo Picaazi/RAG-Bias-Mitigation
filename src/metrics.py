@@ -2,6 +2,7 @@ import numpy as np
 from client import get_openai_embedding
 from typing import List, Dict
 from embedders import Embedder
+from bias_grps import get_bias_grps
 
 
 """Helper Functions"""
@@ -72,8 +73,8 @@ def sem_similarity(orig_embed, new_embed):
 
 def representation_variance(
     documents: List[str],  # List of document texts
-    group_set: Dict[str, List[str]],  # Dictionary of bias-inducing groups and their labels
     embedder: Embedder, # Embedder instance for text embeddings
+    group_set: Dict[str, List[str]] = get_bias_grps(),  # Dictionary of bias-inducing groups and their labels
     threshold: float = 0.8  # Similarity threshold tau
 ) -> float:
 
@@ -100,7 +101,6 @@ def representation_variance(
             similarity = dot_product / norm_product if norm_product > 0 else 0
             
             if similarity >= threshold:
-                print(f"Document '{doc}' mentions group '{label}' with similarity {similarity:.2f}")
                 document_mentions[label] += 1
     
     # Step 4: Calculate p(g) for each group
