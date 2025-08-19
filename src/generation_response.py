@@ -1,4 +1,4 @@
-from src.client import query_openai
+
 import openai
 
 def generate_response(query, top_docs):
