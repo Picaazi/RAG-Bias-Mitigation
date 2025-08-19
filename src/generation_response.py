@@ -1,6 +1,4 @@
-
 import openai
-
 def generate_response(query, top_docs):
     context_text = "\n\n".join([f"{i+1}. {doc}" for i, doc in enumerate(top_docs)])
     prompt = f"""
