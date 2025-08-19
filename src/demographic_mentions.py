@@ -1,7 +1,7 @@
 import os
 import re
-from retrieval import retrieve
-from generation import generate_response
+from src.retrieval.retriever import Retriever
+from src.embedders.embedders import Embedder
 
 Bias_groups = {
     "Race": ["Black", "White","Mixed","Asian", "Latino","Middle-Eastern","Hispanic","Indigneous"],
