@@ -136,8 +136,7 @@ def data_router(name):
         docs = []
         for i in range(len(data)):
             d = data.iloc[i]
-            docs= [d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]]
-            docs.append(docs)
+            docs.append([d["bias1-document1"], d["bias1-document2"], d["bias2-document1"], d["bias2-document2"]])
         return questions, docs
     elif name == "politics_bias":
         train, test = dataloader.load_politics_bias()
@@ -146,15 +145,20 @@ def data_router(name):
         docs = []
         for i in range(len(data)):
             d = data.iloc[i]
-            docs= [d["left_claim"], d["right_claim"]]
-            docs.append(docs)
+            docs.append([d["left_claim"], d["right_claim"]])
         return questions, docs
     elif name == "bbq":
-        # combine all bbq dataset, return question and docs
-        return dataloader.load_bbq_datasets()
+        data = pd.concat(dataloader.load_bbq_datasets(), ignore_index=True)
+        # Get question and docs
+        return questions, docs
     elif name == "bibleqa":
-        # combine all bbq dataset, return question and docs
-        return dataloader.load_bibleqa()
+        data = dataloader.load_bibleqa()
+        questions = data["Question"].tolist()
+        docs = []
+        for i in range(len(data)):
+            d = data.iloc[i]
+            docs.append([d["KJV_Verse"], d["ASV_Verse"], d["YLT_Verse"], d["WEB_Verse"]])
+        return questions, docs
     elif name == "islamqa":
         # combine all bbq dataset, return question and docs
         return dataloader.load_islamqa()

@@ -66,3 +66,6 @@ def load_all_docs_to_db():
     insert_docs("IslamQA", islam_df["Full Answer"].dropna().tolist())
 
     print("All datasets loaded into SQLite!")
+
+if __name__ == "__main__":
+    print(load_islamqa())
