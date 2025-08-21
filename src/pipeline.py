@@ -11,6 +11,9 @@ from retriever import Retriever
 from embedders import Embedder
 import time
 
+RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
+os.makedirs(RESULTS_FOLDER, exist_ok=True)
+
 def pipeline(questions, docs, k=5, mode="Decompose"):
     '''
     Processes a set of questions and documents using different query modification strategies
@@ -121,8 +124,9 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         "rep_variance_score": rep_variance_scores
     })
     timestamp = int(time.time())
-    results_df.to_csv(f"results/results_{mode}_{timestamp}.csv", index=False)
-    print(f"Results saved to results/results_{mode}_{timestamp}.csv")
+    save_path = os.path.join(RESULTS_FOLDER, f"results_{mode}_{timestamp}.csv")
+    results_df.to_csv(save_path, index=False)
+    print(f"Results saved to {save_path}")
 
 
 def data_router(name):
