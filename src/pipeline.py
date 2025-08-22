@@ -10,6 +10,7 @@ import corpus_load_read
 from retriever import Retriever
 from embedders import Embedder
 import time
+import corpus_load_read
 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
@@ -168,6 +169,52 @@ def data_router(name):
         return dataloader.load_islamqa()
 
 
+
+def corpus_router(name):
+    """
+    Routes corpus loading based on the corpus name.
+    
+    Args:
+        name (str): Name of the corpus to load
+        
+    Returns:
+        The loaded corpus data
+        
+    Raises:
+        ValueError: If corpus name is not supported
+    """
+    if name == "wiki":
+        data = corpus_load_read.Wikipedia()
+        data.process()
+        return data.read()
+    elif name == "polnli":
+        data = corpus_load_read.PolNLI()
+        data.process()
+        return data.read()
+    elif name == "fever":
+        data = corpus_load_read.FEVER()
+        data.process()
+        return data.read()
+    elif name == "msmarco":
+        data = corpus_load_read.MSMarcoDataset()
+        data.process()
+        return data.read()
+    elif name == "sbic":
+        data = corpus_load_read.SBIC()
+        data.process()
+        return data.read()
+    elif name == "bbc":
+        data = corpus_load_read.BBC()
+        data.process()
+        return data.read()
+    elif name == "nq":
+        data = corpus_load_read.NaturalQuestions()
+        data.process()
+        return data.read()
+    elif name == "c4corpus":
+        data = corpus_load_read.C4Corpus()
+        data.process()
+        return data.read()
 
 if __name__ == "__main__":
     

@@ -79,4 +79,5 @@ def run_all_experiments():
 
 
 if __name__ == "__main__":
+    set_seed(42)
     run_all_experiments()
