@@ -185,36 +185,22 @@ def corpus_router(name):
     """
     if name == "wiki":
         data = corpus_load_read.Wikipedia()
-        data.process()
-        return data.read()
     elif name == "polnli":
         data = corpus_load_read.PolNLI()
-        data.process()
-        return data.read()
     elif name == "fever":
         data = corpus_load_read.FEVER()
-        data.process()
-        return data.read()
     elif name == "msmarco":
         data = corpus_load_read.MSMarcoDataset()
-        data.process()
-        return data.read()
     elif name == "sbic":
         data = corpus_load_read.SBIC()
-        data.process()
-        return data.read()
     elif name == "bbc":
         data = corpus_load_read.BBC()
-        data.process()
-        return data.read()
     elif name == "nq":
         data = corpus_load_read.NaturalQuestions()
-        data.process()
-        return data.read()
     elif name == "c4corpus":
         data = corpus_load_read.C4Corpus()
-        data.process()
-        return data.read()
+    data.process()
+    return data.read()
 
 if __name__ == "__main__":
     
