@@ -4,6 +4,8 @@ import numpy as np
 import random
 from dotenv import load_dotenv
 import os
+import argparse
+import torch
 
 # # Load API keys 
 load_dotenv()  
@@ -22,7 +24,10 @@ fixed_var_config = {
 
 # Experiment configurations - configs can be added
 experiment_configs = [
-    {"dataset": "gender_bias", "mode": "both"},
+    {
+        "dataset": "gender_bias",
+        "mode": "both"
+    },
 ]
 
 # Set random seed 
@@ -30,7 +35,6 @@ def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
     try:
-        import torch
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
@@ -77,7 +81,12 @@ def run_all_experiments():
 
         wandb.finish()
 
-
 if __name__ == "__main__":
-    set_seed(42)
-    run_all_experiments()
+    parser = argparse.ArgumentParser(description="Run bias mitigation experiments.")
+    parser.add_argument("--dataset", type=str, default="gender_bias", help="Dataset to use for the experiment.")
+    parser.add_argument("--mode", type=str, default="both", help="Mode to use for the experiment.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
+
+    args = parser.parse_args()
+
+    run_all_experiments(args)

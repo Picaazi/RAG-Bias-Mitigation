@@ -114,6 +114,7 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         overlap_scores.append(doc_overlap(base_docs, final_docs))
         sem_scores.append(sem_similarity(base_embed, result_embed)) # Why are we calling this as Semantic Similarity? Higher of this means more divergence???
         rep_variance_scores.append(representation_variance(final_docs, embedder=eb))
+        # TODO: add correctness score
 
     # Save the results as csv
     results_df = pd.DataFrame({
@@ -166,6 +167,8 @@ def data_router(name):
         return questions, docs
     elif name == "islamqa":
         # combine all bbq dataset, return question and docs
+        
+    ## TODO: load all dataset combined
         return dataloader.load_islamqa()
 
 
