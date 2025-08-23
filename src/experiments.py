@@ -46,10 +46,15 @@ def set_seed(seed):
 def run_all_experiments():
     for exp_cfg in experiment_configs:
         cfg = {**fixed_var_config, **exp_cfg}
-        print(f"\n=== Running dataset={cfg['dataset']} mode={cfg['mode']} ===")
-
-
-        #Comment out or delete to determine consistent results or randomness 
+        print(f"\nRunning experiment for:")
+        print(f"dataset={cfg['dataset']}")
+        print(f"mode={cfg['mode']}")
+        print(f"seed={cfg['seed']}")
+        print(f"top_k={cfg['top_k']}")
+        print(f"result_folder={cfg['result_folder']}")
+        
+        set_seed(cfg["seed"])  # Set seed for reproducibility
+        #Comment out or delete to determine consistent results or randomness
         #set_seed(cfg["seed"])
 
         # Load dataset
@@ -64,12 +69,13 @@ def run_all_experiments():
             questions=questions,
             docs=docs,
             k=cfg["top_k"],
-            mode=cfg["mode"]
+            mode=cfg["mode"],
+            result_folder=cfg["result_folder"]
         )
 
         # Find the most recent CSV file saved by pipeline
         saved_files = sorted(
-            [f for f in os.listdir(RESULTS_FOLDER) if f.startswith(f"results_{cfg['mode']}")],
+            [f for f in os.listdir(cfg["result_folder"]) if f.startswith(f"results_{cfg['mode']}")],
             key=lambda x: os.path.getmtime(os.path.join(RESULTS_FOLDER, x))
         )
         if saved_files:
@@ -82,11 +88,4 @@ def run_all_experiments():
         wandb.finish()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run bias mitigation experiments.")
-    parser.add_argument("--dataset", type=str, default="gender_bias", help="Dataset to use for the experiment.")
-    parser.add_argument("--mode", type=str, default="both", help="Mode to use for the experiment.")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
-
-    args = parser.parse_args()
-
-    run_all_experiments(args)
+    run_all_experiments()

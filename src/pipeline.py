@@ -11,11 +11,11 @@ from retriever import Retriever
 from embedders import Embedder
 import time
 import corpus_load_read
+import os
 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
-os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
-def pipeline(questions, docs, k=5, mode="Decompose"):
+def pipeline(questions, docs, k=5, mode="Decompose", result_folder=RESULTS_FOLDER):
     '''
     Processes a set of questions and documents using different query modification strategies
     and evaluates the retrieval performance.
@@ -125,7 +125,9 @@ def pipeline(questions, docs, k=5, mode="Decompose"):
         "sem_score": sem_scores,
         "rep_variance_score": rep_variance_scores
     })
+    
     timestamp = int(time.time())
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
     save_path = os.path.join(RESULTS_FOLDER, f"results_{mode}_{timestamp}.csv")
     results_df.to_csv(save_path, index=False)
     print(f"Results saved to {save_path}")
