@@ -270,6 +270,59 @@ class C4Corpus:
             raise FileNotFoundError(f"{self.file_path} not found. Run `process()` first.")
         return pd.read_csv(self.file_path)
 
+
+    def load_all_corpora():
+        corpora = []
+        # Wikipedia
+        wiki = Wikipedia(limit=100)
+        try:
+            corpora.append(wiki.read())
+        except Exception:
+            pass
+        # PolNLI
+        polnli = PolNLI()
+        try:
+            corpora.append(polnli.read())
+        except Exception:
+            pass
+        # FEVER
+        fever = FEVER()
+        try:
+            corpora.append(fever.read())
+        except Exception:
+            pass
+        # MS MARCO
+        msmarco = MSMarcoDataset(split="train", percent="1%")
+        try:
+            corpora.append(msmarco.read())
+        except Exception:
+            pass
+        # SBIC
+        sbic = SBIC()
+        try:
+            corpora.append(sbic.read())
+        except Exception:
+            pass
+        # BBC
+        bbc = BBC()
+        try:
+            corpora.append(bbc.read())
+        except Exception:
+            pass
+        # Natural Questions
+        nq = NaturalQuestions(split="train")
+        try:
+            corpora.append(nq.read())
+        except Exception:
+            pass
+        # C4
+        c4 = C4Corpus(limit=100)
+        try:
+            corpora.append(c4.read())
+        except Exception:
+            pass
+        return corpora
+
 # Example 
 if __name__ == "__main__":
     c4 = C4Corpus(limit=100)

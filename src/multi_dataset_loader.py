@@ -1,6 +1,6 @@
 # src/loaders/multi_dataset_loader.py
 import pandas as pd
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from db import get_connection
 
 def insert_docs(source, texts):
@@ -11,6 +11,44 @@ def insert_docs(source, texts):
             [(source, t) for t in texts if isinstance(t, str) and t.strip()]
         )
         conn.commit()
+
+# New updates on genderbias and politicBias-QA dataset
+class gender_bias():
+    def __init__(self):
+        self.file_path = "debiasing-rag/dataset/tasks/GenderBias-QA"
+        self.dataset = load_from_disk(self.file_path)
+
+    def query_and_ans(self):
+        train = self.dataset["train"]
+        test = self.dataset["test"]
+        data = pd.concat([train, test])
+        queries = data["queries"]
+        answers = None # This data does not have answers
+        return queries, answers
+    
+    def corpus(self):
+        data = self.dataset["corpus"]
+        corpus = data["text"]
+        return corpus
+
+class politics_bias():
+    def __init__(self):
+        self.file_path = "debiasing-rag/dataset/tasks/PoliticBias-QA"
+        self.dataset = load_from_disk(self.file_path)
+
+    def query_and_ans(self):
+        train = self.dataset["train"]
+        test = self.dataset["test"]
+        val = self.dataset["val"]
+        data = pd.concat([train, val, test])
+        queries = data["queries"]
+        answers = [data["left_claims"], data["right_claims"]]
+        return queries, answers
+
+    def corpus(self):
+        data = self.dataset["corpus"]
+        corpus = data["text"]
+        return corpus
 
 def load_gender_bias():
     return (
