@@ -87,18 +87,18 @@ def flatten_and_deduplicate_fever(dataset):
 ##########################################################################################
 
 
-# Load FEVER corpus
-fever_json_path = os.path.join(output_folder, "fever_data.jsonl")
-dataset = []
-with open(fever_json_path, "r", encoding="utf-8") as f:
-    for line in f:
-        dataset.append(json.loads(line))
+# # Load FEVER corpus
+# fever_json_path = os.path.join(output_folder, "fever_data.jsonl")
+# dataset = []
+# with open(fever_json_path, "r", encoding="utf-8") as f:
+#     for line in f:
+#         dataset.append(json.loads(line))
 
-train_df = flatten_and_deduplicate_fever(dataset)
-train_csv_path = os.path.join(output_folder, "fever_train.csv")
-train_df.to_csv(train_csv_path, index=False)
+# train_df = flatten_and_deduplicate_fever(dataset)
+# train_csv_path = os.path.join(output_folder, "fever_train.csv")
+# train_df.to_csv(train_csv_path, index=False)
 
-print(f"FEVER CSV saved at {train_csv_path}")
+# print(f"FEVER CSV saved at {train_csv_path}")
 
 
 

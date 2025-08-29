@@ -276,7 +276,7 @@ class C4Corpus:
         # Wikipedia
         wiki = Wikipedia(limit=100)
         try:
-            corpora.append(wiki.read())
+            corpora.append(wiki.read()["text"])
         except Exception:
             pass
         # PolNLI
@@ -300,7 +300,7 @@ class C4Corpus:
         # SBIC
         sbic = SBIC()
         try:
-            corpora.append(sbic.read())
+            corpora.append(sbic.read()["post"])
         except Exception:
             pass
         # BBC
@@ -329,6 +329,4 @@ if __name__ == "__main__":
     c4.process()
     df = c4.read()
     print(df.head())
-
-
 
