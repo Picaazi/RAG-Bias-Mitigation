@@ -38,24 +38,24 @@ def flatten_and_deduplicate(dataset):
 
 # # --- Load small subset for testing (adjust [:1%] for larger dataset) ---
 # print("Downloading MS MARCO train split...")
-# msmarco_train = load_dataset("ms_marco", "v2.1", split="train[:1%]")
+msmarco_train = load_dataset("ms_marco", "v2.1", split="train[:1%]")
 
 # print("Downloading MS MARCO test split...")
-# msmarco_test = load_dataset("ms_marco", "v2.1", split="test[:1%]")
+msmarco_test = load_dataset("ms_marco", "v2.1", split="test[:10%]")
 
 # # --- Flatten and deduplicate ---
-# print("Flattening and deduplicating train split...")
+##print("Flattening and deduplicating train split...")
 # train_df = flatten_and_deduplicate(msmarco_train)
 
 # print("Flattening and deduplicating test split...")
-# test_df = flatten_and_deduplicate(msmarco_test)
+test_df = flatten_and_deduplicate(msmarco_test)
 
 # # --- Save CSVs ---
 # train_csv_path = os.path.join(output_folder, "msmarco_train.csv")
-# test_csv_path = os.path.join(output_folder, "msmarco_test.csv")
+test_csv_path = os.path.join(output_folder, "msmarco_test.csv")
 
 # train_df.to_csv(train_csv_path, index=False)
-# test_df.to_csv(test_csv_path, index=False)
+test_df.to_csv(test_csv_path, index=False)
 
 # print(f"MS MARCO CSVs saved in {output_folder}!")
 
@@ -153,3 +153,4 @@ df = pd.DataFrame(pol_nli_test)
 csv_path = os.path.join(output_folder, "pol_nli_test.csv")
 df.to_csv(csv_path, index=False)  # no encoding needed
 print(f"Saved {len(df)} entries to {csv_path}")
+

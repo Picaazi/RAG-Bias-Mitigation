@@ -23,8 +23,8 @@ class gender_bias():
         test = self.dataset["test"]
         data = pd.concat([train, test])
         queries = data["queries"]
-        answers = None # This data does not have answers
-        return queries, answers
+        answers = [data["bias1-document1"], data["bias1-document2"],data["bias2-document1"],data["bias2-document2"]]
+        return queries
     
     def corpus(self):
         data = self.dataset["corpus"]
