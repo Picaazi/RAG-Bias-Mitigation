@@ -1,6 +1,6 @@
 # src/loaders/multi_dataset_loader.py
 import pandas as pd
-from datasets import load_dataset, load_from_disk
+from datasets import load_dataset, load_from_disk, concatenate_datasets
 from db import get_connection
 
 def insert_docs(source, texts):
@@ -19,9 +19,9 @@ class gender_bias():
         self.dataset = load_from_disk(self.file_path)
 
     def query_and_ans(self):
-        train = pd.DataFrame(self.dataset["train"])
-        test = pd.DataFrame(self.dataset["test"])
-        data = pd.concat([train, test])
+        train = self.dataset["train"]
+        test = self.dataset["test"]
+        data = concatenate_datasets([train, test])
         queries = data["queries"]
         answers = [data["bias1-document1"], data["bias1-document2"],data["bias2-document1"],data["bias2-document2"]]
         return queries
