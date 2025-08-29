@@ -19,9 +19,9 @@ class gender_bias():
         self.dataset = load_from_disk(self.file_path)
 
     def query_and_ans(self):
-        train = self.dataset["train"]
-        test = self.dataset["test"]
-        data = concatenate_datasets([train, test])
+        train = self.dataset["train"].to_pandas()
+        test = self.dataset["test"].to_pandas()
+        data = pd.concat([train, test])
         queries = data["queries"]
         answers = [data["bias1-document1"], data["bias1-document2"],data["bias2-document1"],data["bias2-document2"]]
         return queries
