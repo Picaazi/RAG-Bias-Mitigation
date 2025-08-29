@@ -22,7 +22,6 @@ class gender_bias():
         train = pd.DataFrame(self.dataset["train"].to_pandas())
         test = pd.DataFrame(self.dataset["test"].to_pandas())
         data = pd.concat([train, test])
-        print(data.columns)
         queries = data["queries"]
         return queries
     
