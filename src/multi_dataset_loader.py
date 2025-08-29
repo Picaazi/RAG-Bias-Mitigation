@@ -18,12 +18,12 @@ class gender_bias():
         self.file_path = "debiasing-rag/dataset/tasks/GenderBias-QA"
         self.dataset = load_from_disk(self.file_path)
 
-    def query_and_ans(self):
-        train = self.dataset["train"].to_pandas()
-        test = self.dataset["test"].to_pandas()
+    def query(self):
+        train = pd.DataFrame(self.dataset["train"].to_pandas())
+        test = pd.DataFrame(self.dataset["test"].to_pandas())
         data = pd.concat([train, test])
+        print(data.columns)
         queries = data["queries"]
-        answers = [data["bias1-document1"], data["bias1-document2"],data["bias2-document1"],data["bias2-document2"]]
         return queries
     
     def corpus(self):
@@ -106,4 +106,5 @@ def load_all_docs_to_db():
     print("All datasets loaded into SQLite!")
 
 if __name__ == "__main__":
-    print(load_islamqa())
+    gb = gender_bias()
+    print(gb.corpus())
