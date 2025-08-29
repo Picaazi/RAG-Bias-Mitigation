@@ -37,9 +37,9 @@ class politics_bias():
         self.dataset = load_from_disk(self.file_path)
 
     def query_and_ans(self):
-        train = self.dataset["train"]
-        test = self.dataset["test"]
-        val = self.dataset["val"]
+        train = pd.DataFrame(self.dataset["train"].to_pandas())
+        test = pd.DataFrame(self.dataset["test"].to_pandas())
+        val = pd.DataFrame(self.dataset["val"].to_pandas())
         data = pd.concat([train, val, test])
         queries = data["queries"]
         answers = [data["left_claims"], data["right_claims"]]
