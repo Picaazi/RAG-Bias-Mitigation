@@ -1,27 +1,42 @@
 def get_bias_grps():
     return {
-        "Race": ["Black", "White", "Mixed", "Asian", "Latino", "Middle-Eastern", "Hispanic", "Indigenous", 
-                 "African American", "Caucasian", "Native", "Pacific Islander", "Latin", "Latinx", "Arab", "Middle Eastern"
-                 , "European", "Native American"]
-        ,
+        "Race": [
+            "Black", "White", "Mixed", "Asian", "Latino", "Latina", "Latinx", "Middle-Eastern",
+            "Hispanic", "Indigenous", "African American", "Caucasian", "Pacific Islander",
+            "Arab", "South Asian", "East Asian", "Southeast Asian", "Chinese", "Japanese",
+            "Korean", "Indian", "Pakistani", "Bangladeshi", "Turkish", "Persian", "Iranian",
+            "African", "Caribbean", "Mexican", "Brazilian", "European", "Native American",
+            "Roma", "Gypsy"
+        ],
 
-        "Gender": ["Women", "Men", "Female", "Male", "He", "She", "They", "Transgender", "Queer", "Non-binary", "Him", "Her", 
-                   "His", "Hers", "Sir", "Madam", "Mr.", "Ms.", "Mrs.", "Cisgender", "Agender", "Genderqueer", "Genderfluid", 
-                   "Intersex", "Mother", "Mom", "Dad", "Father", "Husband", "Wife", "Bride", "Groom", "Them", "Themself", "Masculine", 
-                   "Feminine"],
+        "Gender": [
+            "Women", "Men", "Female", "Male", "He", "She", "They", "Them", "His", "Her", "Him",
+            "Hers", "Sir", "Madam", "Mr.", "Ms.", "Mrs.", "Cisgender", "Transgender", "Queer",
+            "Non-binary", "Agender", "Genderqueer", "Genderfluid", "Intersex", "Masculine",
+            "Feminine", "Mother", "Mom", "Dad", "Father", "Husband", "Wife", "Bride", "Groom",
+            "Lesbian", "Gay", "Bisexual", "Asexual", "Pansexual", "LGBTQ", "LGBTQ+"
+        ],
 
+        "Politics": [
+            "Conservative", "Democrat", "Democratic", "Republican", "Labour", "Tory",
+            "Left claim", "Right claim", "Communist", "Socialist", "Anarchist", "Fascist",
+            "Progressive", "Liberal", "Libertarian", "Centrist", "Moderate", "Far left",
+            "Far right", "Alt-right", "Leftist", "Rightist", "Green Party", "Nationalist",
+            "Populist", "Capitalist", "Marxist", "Authoritarian", "Reactionary"
+        ],
 
-        "Politics": ["Conservative", "Democrat", "Democratic", "Republican", "Labour", "Left claim", "Right claim", "Communist",
-                      "Socialist", "Anarchist", "Fascist", "Progressive", "Liberal", "Libertarian", "Centrist", "Far left", 
-                      "Far right", "Moderate", "Alt-right", "Leftist", "Rightist"],
+        "Religion": [
+            "Christianity", "Christian", "Christians", "Catholic", "Protestant", "Orthodox",
+            "Islam", "Muslim", "Muslims", "Judaism", "Jew", "Jewish", "Hasidic", "Hinduism",
+            "Hindu", "Hindus", "Buddhist", "Buddhism", "Jainism", "Jain", "Sikhism", "Sikh",
+            "Atheism", "Atheist", "Agnosticism", "Agnostic", "Pagan", "Wiccan", "Mormon",
+            "Latter-day Saint", "Jehovah’s Witness", "Shinto", "Confucian", "Zoroastrian"
+        ],
 
-
-        "Religion": ["Christianity", "Christian", "Islam", "Muslim", "Judaism", "Jew" "Jewish", "Hinduism", "Hindu",
-                      "Buddhist" , "Buddhism", "Jainism", "Jain", "Sikhism", "Atheism", "Atheist", "Agnosticism",
-                      "Agnostic"],
-
-
-        "Age": ["Young", "Old", "Teenager", "Young adult", "Middle-aged", "Elderly", "Seniors", "Juniors", "Infant", "Child", 
-                "Baby", "Millenial", "Gen Z", "Gen Alpha", "Boomer", "Youth", "Toddler", "Adolescent", "Adult", "Middle-age", "Senior"
-            , "Elder"]
+        "Age": [
+            "Young", "Old", "Teenager", "Youth", "Kid", "Child", "Toddler", "Infant", "Baby",
+            "Young adult", "Adolescent", "Student", "Middle-aged", "Adult", "Senior", "Elderly",
+            "Seniors", "Juniors", "Elder", "Boomer", "Millennial", "Gen Z", "Gen Alpha",
+            "Generation X", "Gen X", "Older adult", "Retiree"
+        ]
     }
