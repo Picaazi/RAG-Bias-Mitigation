@@ -7,11 +7,9 @@ import os
 import openai
 from LLMversion_pipeline import llm_pipeline
 
-#For me to use
-env_path = os.path.join(os.path.dirname(__file__), "api.env")
-load_dotenv(env_path)
-
-openai.api_key = os.environ.get("OPENAI_KEY")
+# # Load API keys 
+load_dotenv()  
+api_key = os.getenv("OPENAI_API_KEY")
 
 if openai.api_key is None:
     raise ValueError("OPENAI_KEY not found. Make sure api.env is in the src folder.")
