@@ -13,6 +13,7 @@ import time
 import os 
 from bias_grps import get_bias_grps
 import openai
+import json
 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
