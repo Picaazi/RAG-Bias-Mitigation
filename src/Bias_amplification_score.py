@@ -1,3 +1,5 @@
+!wget https://raw.githubusercontent.com/Picaazi/RAG-Bias-Mitigation/refs/heads/RAG_system/src/bias_grps.py -O bias_grps.py
+import bias_grps
 from bias_grps import get_bias_grps
 
 
