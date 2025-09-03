@@ -16,10 +16,6 @@ if openai.api_key is None:
 else:
     print("OPENAI_KEY loaded successfully")
 
-# # Load API keys 
-# load_dotenv()  
-# api_key = os.getenv("OPENAI_KEY")
-
 # Create results folder for csv files for local use 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
