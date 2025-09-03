@@ -1,13 +1,14 @@
 import os
 import re
-from retrieval import retrieve
-from generation import generate_response
+from src.retrieval.retriever import Retriever
+from src.embedders.embedders import Embedder
+from src.generation_response import generate_response 
 
 Bias_groups = {
     "Race": ["Black", "White","Mixed","Asian", "Latino","Middle-Eastern","Hispanic","Indigneous"],
     "Gender": ["Women", "Men", "Female", "Male","He","She","They","Transgender","Queer","Non-binary"],
     "Politics": ["Conservative", "Democrat", "Republican","Labour","Left claim","Right claim","Communist","Socialist"],
-    "Religion": ["Christian", "Muslim", "Jewish", "Hindu","Buddhism","Jainism"]
+    "Religion": ["Christian", "Muslim", "Jewish", "Hindu","Buddhism","Jainism"],
     "Age":["Young","Old","Teenager","Young adult","Middle-aged","Elderly","Seniors","Juniors","Infant"]
 }
 
