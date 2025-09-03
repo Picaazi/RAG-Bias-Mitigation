@@ -13,16 +13,16 @@ def count_groupmentions(text, group_terms):
 def biasamplicationscore(retrieved_docs, generated_response):
     total_response_G = sum(
         count_groupmentions(generated_response, terms)
-        for terms in get_bias_grps.values()
+        for terms in bias_grps.get_bias_grps.values()
     )
     total_retrieved_G = sum(
         count_groupmentions(doc, terms)
         for doc in retrieved_docs
-        for terms in get_bias_grps.values()
+        for terms in bias_grps.get_bias_grps.values()
     )
 
     biasscore = {}
-    for g, terms in get_bias_grps.items():
+    for g, terms in bias_grps.get_bias_grps.items():
         retrieved_g = sum(count_groupmentions(doc, terms) for doc in retrieved_docs)
         retrieved_prop = retrieved_g / total_retrieved_G if total_retrieved_G > 0 else 0
         response_g = count_groupmentions(generated_response, terms)
