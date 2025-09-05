@@ -12,17 +12,44 @@ from embedders import Embedder
 import time
 import os 
 from bias_grps import get_bias_grps
-import openai
+from openai import OpenAI
 import json
+import re
+from dotenv import load_dotenv
+from client import query_openai
 
+# --- Setup ---
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
+env_path = os.path.join(os.path.dirname(__file__), "api.env")
+load_dotenv(env_path)
+
+api = os.environ.get("OPENAI_KEY")
+client = OpenAI(api_key=api)
+
+
+def extract_json_from_text(text):
+    """Extract first JSON object from GPT response text.""" 
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except:
+            return None
+    return None
+
+
 def extract_bias_groups(documents, save_csv=True, filename=None):
+    """
+    Extract subgroup mentions from documents using a GPT-based bias group extractor.
+    Returns a dataframe in long format (doc_id, document, category, subgroup).
+    """
     bias_groups = get_bias_grps()
     results = []
 
     for i, doc in enumerate(documents):
+        # --- Prompt GPT for bias extraction ---
         prompt = f"""
 You are a bias group extractor.
 The categories are: {list(bias_groups.keys())}
@@ -30,32 +57,42 @@ Each category has subgroups: {bias_groups}
 
 Text: "{doc}"
 
-Return a JSON object with categories as keys and detected subgroup mentions as lists.
-Only include subgroups explicitly or implicitly present.
+Return ONLY a valid JSON object with categories as keys and detected subgroup mentions as lists.
 """
-        response = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0
-        )
+        response_text = query_openai(prompt, model="gpt-4o-mini")
 
-        try:
-            extraction = response.choices[0].message["content"]
-            extraction = pd.json_normalize([pd.json.loads(extraction)])
-        except Exception:
-            extraction = pd.DataFrame([{k: [] for k in bias_groups.keys()}])
+        # --- Try parsing GPT JSON output ---
+        extraction_json = extract_json_from_text(response_text)
+        if extraction_json is None:
+            extraction_json = {k: [] for k in bias_groups.keys()}
 
-        # Convert to long format for CSV
-        for cat in bias_groups.keys():
-            for subgroup in extraction.at[0, cat] if len(extraction) > 0 else []:
+        # --- Record detected subgroups ---
+        has_subgroups = False
+        for category, subgroups in extraction_json.items():
+            for subgroup in subgroups:
                 results.append({
                     "doc_id": i,
                     "document": doc,
-                    "category": cat,
-                    "subgroup": subgroup
+                    "category": category,
+                    "subgroup": subgroup.lower()
                 })
-        # If no subgroups detected, still include row
-        if all(len(extraction.at[0, cat]) == 0 for cat in bias_groups.keys()):
+                has_subgroups = True
+
+        # --- Backup: keyword-based detection ---
+        if not has_subgroups:
+            for category, keywords in bias_groups.items():
+                for kw in keywords:
+                    if kw.lower() in doc.lower():
+                        results.append({
+                            "doc_id": i,
+                            "document": doc,
+                            "category": category,
+                            "subgroup": kw.lower()
+                        })
+                        has_subgroups = True
+
+        # --- If still nothing found, mark None ---
+        if not has_subgroups:
             results.append({
                 "doc_id": i,
                 "document": doc,
@@ -63,6 +100,7 @@ Only include subgroups explicitly or implicitly present.
                 "subgroup": "None"
             })
 
+    # --- Build DataFrame ---
     df = pd.DataFrame(results)
 
     if save_csv:
