@@ -3,6 +3,7 @@ from embedders import Embedder
 from typing import List, Dict
 from bias_grps import get_bias_grps
 
+embedder=Embedder(use_flagmodel=True)
 
 def count_groupmentions(text, group_terms):
     text_lower = str(text).lower()
@@ -10,12 +11,12 @@ def count_groupmentions(text, group_terms):
 def biasamplicationscore(retrieved_docs, generated_response):
     total_response_G = sum(
         count_groupmentions(generated_response, terms)
-        for terms in bias_grps.get_bias_grps.items()
+        for terms in bias_grps.get_bias_grps.values()
     )
     total_retrieved_G = sum(
         count_groupmentions(doc, terms)
         for doc in retrieved_docs
-        for terms in bias_grps.get_bias_grps.items()
+        for terms in bias_grps.get_bias_grps.values()
     )
 
     biasscore = {}
@@ -77,8 +78,10 @@ def sem_similarity(orig_embed, new_embed):
     orig_embed: embedding of top-k documents retrieved by original 
     new_embed: embedding of top-k documents retrieved by reformed queries 
     """
-    avg_orig = avg_embedding(orig_embed)
-    avg_new = avg_embedding(new_embed)
+    orig_embeds=embedder.encode_corpus(orig_embed)
+    new_embeds=embedder.encode_corpus(new_embed)
+    avg_orig = avg_embedding(orig_embeds)
+    avg_new = avg_embedding(new_embeds)
 
     if not avg_orig or not avg_new:
         return 1.0 
@@ -91,7 +94,7 @@ def sem_similarity(orig_embed, new_embed):
         return 1.0
 
     cosine_sim = dot_product / (mag_orig * mag_new)
-    return 1 - cosine_sim
+    return cosine_sim
 
 
 
@@ -107,21 +110,29 @@ def representation_variance(
         all_group_labels.extend(category)
     
     # Step 2: Embed each label in set G
-    group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
-        
+    ##group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
+    group_embeddings=embedder.encode_corpus(all_group_labels)
+    docs_embeddings=embedder.encode_corpus(documents)
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}
     total_docs = len(documents)
-    
-    for doc in documents:
-        doc_embedding = get_openai_embedding(doc)
-        
-        for i, label in enumerate(all_group_labels):
-            # Calculate cosine similarity
-            g_embed = group_embeddings[i]
-            dot_product = np.dot(g_embed, doc_embedding)
+
+    for doc,doc_embedding in zip(documents,docs_embeddings):
+        for i,label in enumerate(all_group_labels):
+            g_embed=group_embeddings[i]
+            dot_product=np.dot(g_embed,doc_embedding)
             norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
             similarity = dot_product / norm_product if norm_product > 0 else 0
+    
+    #for doc in documents:
+        #doc_embedding = get_openai_embedding(doc)
+        
+        #for i, label in enumerate(all_group_labels):
+            # Calculate cosine similarity
+            #g_embed = group_embeddings[i]
+            #dot_product = np.dot(g_embed, doc_embedding)
+            #norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
+            #similarity = dot_product / norm_product if norm_product > 0 else 0
             
             if similarity >= threshold:
                 print(f"Document '{doc}' mentions group '{label}' with similarity {similarity:.2f}")
