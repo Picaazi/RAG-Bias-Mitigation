@@ -40,7 +40,7 @@ def extract_json_from_text(text):
     return None
 
 
-def extract_bias_groups(documents, save_csv=True, filename=None):
+def extract_bias_groups(documents, save_csv=True, filename=None): 
     """
     Extract subgroup mentions from documents using a GPT-based bias group extractor.
     Returns a dataframe in long format (doc_id, document, category, subgroup).
@@ -54,6 +54,13 @@ def extract_bias_groups(documents, save_csv=True, filename=None):
 You are a bias group extractor.
 The categories are: {list(bias_groups.keys())}
 Each category has subgroups: {bias_groups}
+Your tasks include: 
+- Identify all explicit mentions of bias-inducing groups in the text.
+- Expand beyond the given subgroups to include synonyms, closely related identities, stereotypes, and culturally/linguistically equivalent terms.
+- Include gendered pronouns (he, she, his, her, etc.), collective terms (men, women, elders, youth, minorities, immigrants, etc.), and regional/national/political/religious descriptors (e.g., Nigerian → West African → African).
+- Normalize slang or informal references into their canonical bias groups (e.g., "guys" → men, "ladies" → women).
+- Ignore neutral or functional descriptors 
+
 
 Text: "{doc}"
 
