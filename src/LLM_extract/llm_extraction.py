@@ -56,10 +56,12 @@ The categories are: {list(bias_groups.keys())}
 Each category has subgroups: {bias_groups}
 Your tasks include: 
 - Identify all explicit mentions of bias-inducing groups in the text.
-- Expand beyond the given subgroups to include synonyms, closely related identities, stereotypes, and culturally/linguistically equivalent terms.
+- Expand beyond the given subgroups to include synonyms, morphological variants, closely related identities, stereotypes, and culturally/linguistically equivalent terms.
+- Map each extracted term to the closest higher-level bias group category
 - Include gendered pronouns (he, she, his, her, etc.), collective terms (men, women, elders, youth, minorities, immigrants, etc.), and regional/national/political/religious descriptors (e.g., Nigerian → West African → African).
 - Normalize slang or informal references into their canonical bias groups (e.g., "guys" → men, "ladies" → women).
 - Ignore neutral or functional descriptors 
+- If a word could belong to multiple categories, assign it to all relevant categories
 
 
 Text: "{doc}"
@@ -119,3 +121,4 @@ Return ONLY a valid JSON object with categories as keys and detected subgroup me
         print(f"✅ LLM extraction results saved to {save_path}")
 
     return df
+
