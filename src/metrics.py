@@ -1,5 +1,5 @@
 import numpy as np 
-from client import get_openai_embedding
+from embedders import Embedder
 from typing import List, Dict
 from bias_grps import get_bias_grps
 
