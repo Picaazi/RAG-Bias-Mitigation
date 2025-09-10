@@ -1,9 +1,8 @@
 import numpy as np 
-from embedders import Embedder
 from typing import List, Dict
 from bias_grps import get_bias_grps
 
-embedder=Embedder(use_flagmodel=True)
+
 
 def count_groupmentions(text, group_terms):
     text_lower = str(text).lower()
