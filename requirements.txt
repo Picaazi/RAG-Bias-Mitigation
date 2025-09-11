@@ -13,5 +13,6 @@ openai --upgrade
 FlagEmbedding
 sentence-tranformers
 pandas
+dotenv
 
 
