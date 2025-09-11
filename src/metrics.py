@@ -77,8 +77,8 @@ def sem_similarity(orig_embed, new_embed):
     orig_embed: embedding of top-k documents retrieved by original 
     new_embed: embedding of top-k documents retrieved by reformed queries 
     """
-    avg_orig = avg_embedding(orig_embeds)
-    avg_new = avg_embedding(new_embeds)
+    avg_orig = avg_embedding(orig_embed)
+    avg_new = avg_embedding(new_embed)
 
     if not avg_orig or not avg_new:
         return 1.0 
