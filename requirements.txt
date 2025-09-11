@@ -12,6 +12,13 @@ ir_datasets
 FlagEmbedding
 sentence-tranformers
 pandas
+random
+threading
+time
+concurrent.futures
+requests
+json
+numpy
 
 
 
