@@ -1,6 +1,33 @@
 import numpy as np 
-from client import get_openai_embedding
 from typing import List, Dict
+from bias_grps import get_bias_grps
+from client import get_openai_embedding
+
+
+def count_groupmentions(text, group_terms):
+    text_lower = str(text).lower()
+    return sum(1 for term in group_terms if term.lower() in text_lower)
+def biasamplicationscore(retrieved_docs, generated_response):
+    total_response_G = sum(
+        count_groupmentions(generated_response, terms)
+        for terms in bias_grps.get_bias_grps.values()
+    )
+    total_retrieved_G = sum(
+        count_groupmentions(doc, terms)
+        for doc in retrieved_docs
+        for terms in bias_grps.get_bias_grps.values()
+    )
+
+    biasscore = {}
+    for g, terms in bias_grps.get_bias_grps.items():
+        retrieved_g = sum(count_groupmentions(doc, terms) for doc in retrieved_docs)
+        retrieved_prop = retrieved_g / total_retrieved_G if total_retrieved_G > 0 else 0
+        response_g = count_groupmentions(generated_response, terms)
+        response_prop = response_g / total_response_G if total_response_G > 0 else 0
+
+        biasscore[g] = response_prop - retrieved_prop
+
+    return biasscore
 
 """Helper Functions"""
 def avg_embedding(embeddings): 
@@ -64,7 +91,7 @@ def sem_similarity(orig_embed, new_embed):
         return 1.0
 
     cosine_sim = dot_product / (mag_orig * mag_new)
-    return 1 - cosine_sim
+    return cosine_sim
 
 
 
@@ -81,10 +108,18 @@ def representation_variance(
     
     # Step 2: Embed each label in set G
     group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
-        
+    #group_embeddings=embedder.encode_corpus(all_group_labels)
+    #docs_embeddings=embedder.encode_corpus(documents)
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}
     total_docs = len(documents)
+
+    #for doc,doc_embedding in zip(documents,docs_embeddings):
+        #for i,label in enumerate(all_group_labels):
+            #g_embed=group_embeddings[i]
+            #dot_product=np.dot(g_embed,doc_embedding)
+            #norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
+            #similarity = dot_product / norm_product if norm_product > 0 else 0
     
     for doc in documents:
         doc_embedding = get_openai_embedding(doc)
