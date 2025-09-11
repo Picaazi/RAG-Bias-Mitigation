@@ -77,8 +77,6 @@ def sem_similarity(orig_embed, new_embed):
     orig_embed: embedding of top-k documents retrieved by original 
     new_embed: embedding of top-k documents retrieved by reformed queries 
     """
-    orig_embeds=embedder.encode_corpus(orig_embed)
-    new_embeds=embedder.encode_corpus(new_embed)
     avg_orig = avg_embedding(orig_embeds)
     avg_new = avg_embedding(new_embeds)
 
@@ -109,29 +107,29 @@ def representation_variance(
         all_group_labels.extend(category)
     
     # Step 2: Embed each label in set G
-    ##group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
-    group_embeddings=embedder.encode_corpus(all_group_labels)
-    docs_embeddings=embedder.encode_corpus(documents)
+    group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
+    #group_embeddings=embedder.encode_corpus(all_group_labels)
+    #docs_embeddings=embedder.encode_corpus(documents)
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}
     total_docs = len(documents)
 
-    for doc,doc_embedding in zip(documents,docs_embeddings):
-        for i,label in enumerate(all_group_labels):
-            g_embed=group_embeddings[i]
-            dot_product=np.dot(g_embed,doc_embedding)
-            norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
-            similarity = dot_product / norm_product if norm_product > 0 else 0
-    
-    #for doc in documents:
-        #doc_embedding = get_openai_embedding(doc)
-        
-        #for i, label in enumerate(all_group_labels):
-            # Calculate cosine similarity
-            #g_embed = group_embeddings[i]
-            #dot_product = np.dot(g_embed, doc_embedding)
+    #for doc,doc_embedding in zip(documents,docs_embeddings):
+        #for i,label in enumerate(all_group_labels):
+            #g_embed=group_embeddings[i]
+            #dot_product=np.dot(g_embed,doc_embedding)
             #norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
             #similarity = dot_product / norm_product if norm_product > 0 else 0
+    
+    for doc in documents:
+        doc_embedding = get_openai_embedding(doc)
+        
+        for i, label in enumerate(all_group_labels):
+            # Calculate cosine similarity
+            g_embed = group_embeddings[i]
+            dot_product = np.dot(g_embed, doc_embedding)
+            norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
+            similarity = dot_product / norm_product if norm_product > 0 else 0
             
             if similarity >= threshold:
                 print(f"Document '{doc}' mentions group '{label}' with similarity {similarity:.2f}")
