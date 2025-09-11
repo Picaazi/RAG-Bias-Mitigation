@@ -1,7 +1,7 @@
 import numpy as np 
 from typing import List, Dict
 from bias_grps import get_bias_grps
-
+from client import get_openai_embedding
 
 
 def count_groupmentions(text, group_terms):
