@@ -9,7 +9,6 @@ sentencepiece
 datasets
 torch
 ir_datasets
-openai --upgrade
 FlagEmbedding
 sentence-tranformers
 pandas
