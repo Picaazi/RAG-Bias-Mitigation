@@ -4,8 +4,6 @@ from src.rag_system import embed_documents
 import argparse
 import os
 
-
-
 def decompose():
     query = input("Enter your query: ")
         

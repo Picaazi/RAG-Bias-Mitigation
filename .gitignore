@@ -221,3 +221,6 @@ __marimo__/
 debiasing-rag/
 .DS_Store
 results/
+
+mskh_env/
+openai_key.txt

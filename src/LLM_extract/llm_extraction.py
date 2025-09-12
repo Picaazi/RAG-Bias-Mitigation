@@ -25,7 +25,7 @@ os.makedirs(RESULTS_FOLDER, exist_ok=True)
 env_path = os.path.join(os.path.dirname(__file__), "api.env")
 load_dotenv(env_path)
 
-api = os.environ.get("OPENAI_KEY")
+api = os.getenv("OPENAI_KEY")
 client = OpenAI(api_key=api)
 
 

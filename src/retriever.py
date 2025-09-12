@@ -43,7 +43,7 @@ class Retriever:
 
         top_idx = np.argsort(scores)[::-1][:top_k]
         results = [
-            {"rank": i + 1, "score": float(scores[idx]), "doc": self.docs[idx], "doc_id": idx}
+            {"rank": i + 1, "score": float(scores[idx]), "doc": self.docs.iloc[idx], "doc_id": idx}
             for i, idx in enumerate(top_idx)
         ]
         return results

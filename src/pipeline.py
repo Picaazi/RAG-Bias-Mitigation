@@ -61,15 +61,17 @@ def pipeline(questions, docs, k=5, mode="Decompose", result_folder=RESULTS_FOLDE
 
     print("Initializing embedder")
     eb = Embedder(use_flagmodel=False)
+    
+    print("Initializing retriever")
+    retriever = Retriever(docs, embedder=eb)
+    
 
-    # For each data, get question and documents, put them into retriever
+    # For each data, get question and put them into retriever
     for i in range(len(questions)):
         q = questions[i]
-        d = docs[i]
         print(f"Processing question {i+1}/{len(questions)}: {q}")
-        retriever = Retriever(d, embedder=eb)
         print("Getting base result")
-        base_result = retriever.retrieve(q, top_k=min(k, len(d)))
+        base_result = retriever.retrieve(q, top_k=min(k, len(docs)))
         
         result = []
         if mode == "decompose":
@@ -78,14 +80,14 @@ def pipeline(questions, docs, k=5, mode="Decompose", result_folder=RESULTS_FOLDE
             for j, sub_q in enumerate(sub_qs):
                 print(f"Sub-query {j+1}: {sub_q}")
             combined_qs = combine_queries(sub_qs)
-            result = retriever.retrieve(query=combined_qs, top_k=min(k, len(d)))
+            result = retriever.retrieve(query=combined_qs, top_k=min(k, len(docs)))
             final_questions.append(sub_qs)
         elif mode == "rewrite":
             print("Rewriting sub-queries:")
             new_q = rewrite_query([q])
             print(f"Original query: {q}")
             print(f"Rephrased query: {new_q[0]}")
-            result = retriever.retrieve(query=new_q[0], top_k=min(k, len(d)))
+            result = retriever.retrieve(query=new_q[0], top_k=min(k, len(docs)))
             
             final_questions.append(new_q)
         elif mode == "both":
@@ -101,12 +103,15 @@ def pipeline(questions, docs, k=5, mode="Decompose", result_folder=RESULTS_FOLDE
                 else:
                     print(f"Sub-query {j+1} is neutral: {sub_q}")
             combined_qs = combine_queries(sub_qs)
-            result = retriever.retrieve(query=combined_qs, top_k=min(k, len(d)))
+            result = retriever.retrieve(query=combined_qs, top_k=min(k, len(docs)))
             final_questions.append(sub_qs)
-        final_docs = [d["doc"] for d in result]
-        base_docs = [d["doc"] for d in base_result]
-        final_results.append(final_docs)
+        
+        final_docs = [str(d["doc"]) for d in result]
+        base_docs = [str(d["doc"]) for d in base_result]
+        
         base_results.append(base_docs)
+        final_results.append(final_docs)
+
 
         base_embed = eb.encode_queries(base_docs)
         result_embed = eb.encode_queries(final_docs)
@@ -204,14 +209,15 @@ def corpus_router(name):
         data = corpus_load_read.NaturalQuestions()
     elif name == "c4corpus":
         data = corpus_load_read.C4Corpus()
-    data.process()
+    # data.process()
     return data.read()
 
 if __name__ == "__main__":
     
     print("Loading datasets...")
     questions, docs = data_router("gender_bias")
+    corpus_data = corpus_router("polnli")
     q = questions[:5]
-    d = docs[:5]
-    
-    pipeline(q, d, mode="both")
+    d = corpus_data["premise"][:10]
+
+    pipeline(q, d, mode="rewrite", k=5)
