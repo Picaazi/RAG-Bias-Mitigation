@@ -251,8 +251,8 @@ if __name__ == "__main__":
   # Config
   cfg = ASRankConfig(rank_model_name=model_name, device=None)
   reranker = AsRankReranker(cfg=cfg)
-  rerank_docs = reranker.rank(documents)
   reranker.scent_fn = reranker.answer_scent
+  rerank_docs = reranker.rank(documents)
   print("All document reranked")
   word_bag=bias_grps.get_bias_grps()
 
@@ -261,12 +261,19 @@ if __name__ == "__main__":
   print("Start running metrics calculation")
 
   for idx, (original_doc, perturbed_doc) in enumerate(zip(documents, rerank_docs), 1):
-    print(f"Current idx: {idx}")
+    print("="*80)
+    print(f"Query: {idx}:{original_doc.question.question}")
     orig_text = [c.text for c in original_doc.contexts]
     pert_text = [c.text for c in perturbed_doc.contexts]
 
     print("calling scent_fn")
     scent = reranker.scent_fn(original_doc.question.question)
+    print(f"Answer scent: {scent}\n")
+
+    print("Top 10 reranked document")
+    for i, ctx in enumerate(pert_text[:10], 1):
+            preview = ctx.replace("\n", " ")[:200]  # truncate
+            print(f"  {i}. {preview}...\n")
 
 
     print("calling get openai embeddings")
@@ -289,6 +296,8 @@ if __name__ == "__main__":
         "rep_variance": metrics.representation_variance(documents=pert_text,group_set=word_bag),
         "bias_amp": metrics.biasamplicationscore(pert_text,gen_answer)
       }
+    print("metrics for this query:")
+    print(metrics)
 
     metrics_list_output.append({
         "query": original_doc.question.question,
