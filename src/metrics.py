@@ -1,13 +1,36 @@
 import numpy as np 
 from client import get_openai_embedding
 from typing import List, Dict
-from embedders import Embedder
 from bias_grps import get_bias_grps
 
+def count_groupmentions(text, group_terms):
+    text_lower = str(text).lower()
+    return sum(1 for term in group_terms if term.lower() in text_lower)
+def biasamplicationscore(retrieved_docs, generated_response):
+    total_response_G = sum(
+        count_groupmentions(generated_response, terms)
+        for terms in bias_grps.get_bias_grps.values()
+    )
+    total_retrieved_G = sum(
+        count_groupmentions(doc, terms)
+        for doc in retrieved_docs
+        for terms in bias_grps.get_bias_grps.values()
+    )
+
+    biasscore = {}
+    for g, terms in bias_grps.get_bias_grps.items():
+        retrieved_g = sum(count_groupmentions(doc, terms) for doc in retrieved_docs)
+        retrieved_prop = retrieved_g / total_retrieved_G if total_retrieved_G > 0 else 0
+        response_g = count_groupmentions(generated_response, terms)
+        response_prop = response_g / total_response_G if total_response_G > 0 else 0
+
+        biasscore[g] = response_prop - retrieved_prop
+
+    return biasscore
 
 """Helper Functions"""
 def avg_embedding(embeddings): 
-    if len(embeddings) == 0: 
+    if not embeddings: 
         return []
 
     dimension = len(embeddings[0]) 
@@ -50,8 +73,8 @@ def sem_similarity(orig_embed, new_embed):
     original queries and new queries (sub-queries / rephrased) 
 
     Args: 
-    orig_embed: embedding of top-k documents retrieved by original queries
-    new_embed: embedding of top-k documents retrieved by reformed queries
+    orig_embed: embedding of top-k documents retrieved by original 
+    new_embed: embedding of top-k documents retrieved by reformed queries 
     """
     avg_orig = avg_embedding(orig_embed)
     avg_new = avg_embedding(new_embed)
@@ -67,14 +90,13 @@ def sem_similarity(orig_embed, new_embed):
         return 1.0
 
     cosine_sim = dot_product / (mag_orig * mag_new)
-    return cosine_sim
+    return 1 - cosine_sim
 
 
 
 def representation_variance(
     documents: List[str],  # List of document texts
-    embedder: Embedder, # Embedder instance for text embeddings
-    group_set: Dict[str, List[str]] = get_bias_grps(),  # Dictionary of bias-inducing groups and their labels
+    group_set: Dict[str, List[str]],  # Dictionary of bias-inducing groups and their labels
     threshold: float = 0.8  # Similarity threshold tau
 ) -> float:
 
@@ -84,14 +106,14 @@ def representation_variance(
         all_group_labels.extend(category)
     
     # Step 2: Embed each label in set G
-    group_embeddings = [embedder.model.encode(label, convert_to_numpy=True) for label in all_group_labels] ### TO DO: Test other embedding models
-
+    group_embeddings = [get_openai_embedding(label) for label in all_group_labels] ### TO DO: Test other embedding models
+        
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}
     total_docs = len(documents)
     
     for doc in documents:
-        doc_embedding = embedder.model.encode(doc, convert_to_numpy=True)
+        doc_embedding = get_openai_embedding(doc)
         
         for i, label in enumerate(all_group_labels):
             # Calculate cosine similarity
@@ -101,6 +123,7 @@ def representation_variance(
             similarity = dot_product / norm_product if norm_product > 0 else 0
             
             if similarity >= threshold:
+                print(f"Document '{doc}' mentions group '{label}' with similarity {similarity:.2f}")
                 document_mentions[label] += 1
     
     # Step 4: Calculate p(g) for each group
@@ -119,32 +142,8 @@ def representation_variance(
     return variance
 
 
-def get_correctness_score(predictions, answers, queries, judge):
-    print("\nGPT is judging\n")
-    scores = []
-    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-    for query, prediction, answer in tqdm(zip(queries, predictions, answers)):
-        prompt = f"""QUESTION: {query}
-            ANSWER: {answer}
-            PREDICTION: {prediction}      
-            Given this triplet of QUESTION, ANSWER, and PREDICTION, does any information in the PREDICTION align with the ANSWER or does any reasoning in the PREDICTION lead to the ANSWER? (YES/NO)"""
-    
-        messages = [{"role": "user", "content": prompt}]
-        chat_completion = client.chat.completions.create(
-        messages=messages,
-        model=judge,
-        temperature=0,
-        n=1,
-        )
-        
-        response = chat_completion.choices[0].message.content
-        if response.lower() == "yes":
-            scores.append(1)
-        else:
-            scores.append(0)
-        
-    print(f"\nGPT Judge Score: {round(sum(scores) / len(scores), 2)}\n")
-    return scores
+### Add correctness score
+
 
 # Example usage with a mock embedding model:
 if __name__ == "__main__":
@@ -178,6 +177,9 @@ if __name__ == "__main__":
     )
     
     print(f"Representation Variance: {rep_var:.4f}")
+
+
+
 
 
 
