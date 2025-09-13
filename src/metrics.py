@@ -90,7 +90,7 @@ def sem_similarity(orig_embed, new_embed):
         return 1.0
 
     cosine_sim = dot_product / (mag_orig * mag_new)
-    return 1 - cosine_sim
+    return cosine_sim
 
 
 
