@@ -19,6 +19,7 @@ concurrent.futures
 requests
 json
 numpy
+dataclasses
 
 
 
