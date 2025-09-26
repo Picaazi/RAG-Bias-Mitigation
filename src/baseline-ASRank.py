@@ -23,7 +23,7 @@ class AsRankReranker(BaseRanking):
     load_dotenv(env_path)
     openai.api_key = os.environ.get("OPENAI_KEY")
     #from google.colab import userdata
-    self.api_key=openai.api_key #userdata.get('OPENAI_KEY')
+    self.api_key = openai.api_key #userdata.get('OPENAI_KEY')
     self.cfg=cfg or ASRankConfig()
 
     super().__init__(method=method,model_name=cfg.rank_model_name,api_key=api_key)
@@ -68,10 +68,10 @@ class AsRankReranker(BaseRanking):
         return float(torch.log(torch.tensor(norm / (1 - norm))).item())
 
   def rank(self, documents: List[Document]):
-        print(f"Number of documnets: {len(documents)}")
+        #print(f"Number of documnets: {len(documents)}")
         idx =1
         for doc in documents:
-            print(idx)
+            #print(idx)
             q = doc.question.question
             scent = self.scent_fn(q)
 
@@ -145,8 +145,8 @@ class AsRankReranker(BaseRanking):
         prompt = f"Generate a brief, insightful answer scent to the following question: {question}"
         samples=self.generate_samples(prompt=prompt,model_name="gpt-3.5-turbo",num_samples=1)
         api_key=self.api_key
-          if not api_key:
-              raise ValueError("OPENAI_API_KEY environment variable not set")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY environment variable not set")
 
         # client = OpenAI(api_key=self.api_key)
         # response = client.chat.completions.create(
@@ -159,8 +159,8 @@ class AsRankReranker(BaseRanking):
 
         if samples:
           scent_text=samples[0]
-          print("prompt is",prompt)
-          print("scent_text is:",scent_text)
+          #print("prompt is",prompt)
+          #print("scent_text is:",scent_text)
           return scent_text or "No scent generated"
         else:
           return f"Likely concise answer to: {question}"
@@ -174,11 +174,42 @@ class AsRankReranker(BaseRanking):
         print(f"Error generating scent: {e}. Using fallback scent.")
         return f"Likely concise answer to: {question}"
 
+#class C4Corpus:
+    #def __init__(self, limit=100):
+         #limit (int): Number of entries to save for processing.
+
+        #self.limit = limit
+        #self.file_path = os.path.join(CORPUS_FOLDER, "c4_en_sample.csv")
+
+    #def process(self):
+        #"""Download the English C4 dataset (streaming) and save a subset to CSV."""
+        #dataset = load_dataset("allenai/c4", "en", split="train", streaming=True)
+        #rows = []
+        #for i, sample in enumerate(dataset):
+            #if i >= self.limit:
+                #break
+            #rows.append({"text": sample.get("text", ""), "timestamp": sample.get("timestamp", "")})
+
+        #df = pd.DataFrame(rows)
+        #df.to_csv(self.file_path, index=False)
+        #print(f"Saved {len(df)} C4 entries to {self.file_path}")
+
+    #def read(self):
+        #"""Read the saved CSV from corpus folder."""
+        #if not os.path.exists(self.file_path):
+            #raise FileNotFoundError(f"{self.file_path} not found. Run `process()` first.")
+        #return pd.read_csv(self.file_path)
+
+
 # Register into Rankify’s method map
 METHOD_MAP["asrank"] = AsRankReranker
 
 #######RUNNING THE CODE###########
 if __name__ == "__main__":
+  #import os
+  #from google.colab import userdata
+  #os.environ["OPENAI_KEY"] = userdata.get('OPENAI_KEY')
+
   model_name = "t5-small"
 #   tokenizer = AutoTokenizer.from_pretrained(model_name)
 #   model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
@@ -230,44 +261,55 @@ if __name__ == "__main__":
 
 # Combine all corpora
 
-  combined_corpus = list(set(msmarco_corpus + genderbiasQA_corpus + webis_corpus + polNLi_corpus + SBIC_corpus))
-  random.shuffle(combined_corpus)  # Randomize for a fair dataset-corpus combo
-
+  corpus = list(set(msmarco_corpus + genderbiasQA_corpus + webis_corpus + polNLi_corpus + SBIC_corpus))
+  random.shuffle(corpus)
+  combined_corpus=corpus  # Randomize for a fair dataset-corpus combo
+  tokenized_corpus=[doc.lower().split() for doc in combined_corpus]
+  bm25=BM25Okapi(tokenized_corpus)
+  print("Corpus loaded")
 # Get queries from GenderBiasQA
   queries = genderbiasQA.query()
-  print("Loaded dataset,corpus and queries")
+  print("Loaded test queries")
 
 
 # Prepare relevant documents for each query in genderbiasQA##
   documents = []
   test_queries=queries[:10]
-  test_docs=combined_corpus[:30]
+  #test_docs=combined_corpus[:30]
   metrics_list_output = []
 
   for q_idx, query_text in enumerate(test_queries):
-      contexts = [Context(id=i,text=text) for i,text in enumerate(test_docs)]
+      tokenized_query=query_text.lower().split()
+      top_k=10
+      retrieved_idxs=bm25.get_top_n(tokenized_query,combined_corpus,n=top_k)
+      contexts = [Context(id=i,text=text) for i,text in enumerate(retrieved_idxs)]
       doc = Document(question=Question(query_text),answers=None,contexts=contexts)
       documents.append(doc)
   # Config
   cfg = ASRankConfig(rank_model_name=model_name, device=None)
   reranker = AsRankReranker(cfg=cfg)
-  rerank_docs = reranker.rank(documents)
   reranker.scent_fn = reranker.answer_scent
+  rerank_docs = reranker.rank(documents)
   print("All document reranked")
-  word_bag=bias_grps.get_bias_grps()
 
 
   ##INTEGRATING OUR BIAS METRICS##
   print("Start running metrics calculation")
 
   for idx, (original_doc, perturbed_doc) in enumerate(zip(documents, rerank_docs), 1):
-    print(f"Current idx: {idx}")
+    print("="*80)
+    print(f"Query: {idx}:{original_doc.question.question}")
     orig_text = [c.text for c in original_doc.contexts]
     pert_text = [c.text for c in perturbed_doc.contexts]
 
     print("calling scent_fn")
     scent = reranker.scent_fn(original_doc.question.question)
+    print(f"Answer scent: {scent}\n")
 
+    print("Top 10 reranked document")
+    for i, ctx in enumerate(pert_text[:10], 1):
+            preview = ctx.replace("\n", " ")[:200]  # truncate
+            print(f"  {i}. {preview}...\n")
 
     print("calling get openai embeddings")
     orig_embeds = [e for e in (client.get_openai_embedding(t) for t in orig_text) if e is not None]
@@ -281,20 +323,25 @@ if __name__ == "__main__":
             ctx=pert_text[0] if pert_text else ""
         )
     )
+    
 
     ##output format per query##
-    metrics = {
+    results = {
         "sem_similarity": metrics.sem_similarity(orig_embeds,pert_embeds),
         "doc_overlap": metrics.doc_overlap(orig_text,pert_text),
-        "rep_variance": metrics.representation_variance(documents=pert_text,group_set=word_bag),
+        "rep_variance": metrics.representation_variance(pert_text),
         "bias_amp": metrics.biasamplicationscore(pert_text,gen_answer)
-      }
+    }
+
+    print("metrics for this query:")
+    print(results)
+    print("Generated answer:", gen_answer)
 
     metrics_list_output.append({
         "query": original_doc.question.question,
         "answer_scent": scent,
         "top_contexts": pert_text[:10],  # top 10 contexts
-        "metrics": metrics
+        "metrics": results
       })
 
 
@@ -317,4 +364,3 @@ if __name__ == "__main__":
   df = pd.DataFrame(flat_data)
   df.to_csv("output.csv", index=False)
   print("CSV saved as output.csv")
-
