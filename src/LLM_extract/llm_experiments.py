@@ -4,17 +4,24 @@ import numpy as np
 import random
 from dotenv import load_dotenv
 import os
+from openai import OpenAI
 import openai
 from LLMversion_pipeline import llm_pipeline
 
-# # Load API keys 
-load_dotenv()  
-api_key = os.getenv("OPENAI_API_KEY")
+#For me to use
+env_path = os.path.join(os.path.dirname(__file__), "api.env")
+load_dotenv(env_path)
+
+openai.api_key = os.environ.get("OPENAI_KEY")   
 
 if openai.api_key is None:
     raise ValueError("OPENAI_KEY not found. Make sure api.env is in the src folder.")
 else:
     print("OPENAI_KEY loaded successfully")
+
+# # Load API keys 
+# load_dotenv()  
+# api_key = os.getenv("OPENAI_KEY")
 
 # Create results folder for csv files for local use 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
@@ -58,13 +65,13 @@ def run_all_experiments():
         # Initialize WandB
         wandb.init(project="bias-mitigation", config=cfg)
 
-        # Run pipeline (pipeline already saves CSV)
+        # Run pipeline (pipeline already saves CSV) - or change pipeline function (LLM / reg)
         llm_pipeline(
-            questions=questions,
-            docs=docs,
-            k=cfg["top_k"],
-            mode=cfg["mode"]
-        )
+           questions=questions,
+           docs=docs,
+           k=cfg["top_k"],
+        mode=cfg["mode"]
+       )
 
         # Find the most recent CSV file saved by pipeline
         saved_files = sorted(
