@@ -50,7 +50,7 @@ def pipeline(questions, docs, k=5, mode="Decompose", result_folder=RESULTS_FOLDE
     if mode not in ["decompose", "rewrite", "both"]:
         raise ValueError("Invalid mode. Choose from 'decompose', 'rewrite', or 'both'.")
 
-    # embed mode?
+    # TODO: Add embedding mode
     overlap_scores = []
     sem_scores = []
     rep_variance_scores = []
@@ -60,11 +60,10 @@ def pipeline(questions, docs, k=5, mode="Decompose", result_folder=RESULTS_FOLDE
     base_results = []
 
     print("Initializing embedder")
-    eb = Embedder(use_flagmodel=False)
+    eb = Embedder(use_flagmodel=False, device ="cuda")
     
     print("Initializing retriever")
-    retriever = Retriever(docs, embedder=eb)
-    
+    retriever = Retriever(docs, embedder=eb, embeddings_cache="embeddings_cache/polnli.pkl", method="dense")
 
     # For each data, get question and put them into retriever
     for i in range(len(questions)):
@@ -218,6 +217,6 @@ if __name__ == "__main__":
     questions, docs = data_router("gender_bias")
     corpus_data = corpus_router("polnli")
     q = questions[:5]
-    d = corpus_data["premise"][:10]
+    d = corpus_data["premise"][:1000]
 
     pipeline(q, d, mode="rewrite", k=5)

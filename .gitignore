@@ -224,3 +224,4 @@ results/
 
 mskh_env/
 openai_key.txt
+embeddings_cache/

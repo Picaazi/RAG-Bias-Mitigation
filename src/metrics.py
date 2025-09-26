@@ -89,7 +89,8 @@ def representation_variance(
     # Step 3: Match embedded labels to documents
     document_mentions = {label: 0 for label in all_group_labels}
     total_docs = len(documents)
-    
+    print(f"Total Documents: {total_docs}")
+
     for doc in documents:
         doc_embedding = embedder.model.encode(doc, convert_to_numpy=True)
         
@@ -99,7 +100,8 @@ def representation_variance(
             dot_product = np.dot(g_embed, doc_embedding)
             norm_product = np.linalg.norm(g_embed) * np.linalg.norm(doc_embedding)
             similarity = dot_product / norm_product if norm_product > 0 else 0
-            
+            # print(f"similarity for {label}: {similarity}")
+
             if similarity >= threshold:
                 document_mentions[label] += 1
     
@@ -108,7 +110,7 @@ def representation_variance(
     for label, count in document_mentions.items():
         if total_docs > 0:
             p_g[label] = count / total_docs
-    print(p_g)
+    # print(p_g)
 
     # Step 5: Calculate p̄ (average of all p(g))
     p_bar = sum(p_g.values()) / len(all_group_labels)

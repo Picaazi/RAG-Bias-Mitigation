@@ -23,6 +23,8 @@ class Embedder:
             self.model = FlagModel(model_name, 
                                    query_instruction_for_retrieval="Represent this query for retrieval:",
                                    use_fp16=False)
+            if device == "cuda":
+                self.model = self.model.to("cuda") # Need to be tested
             self.encode_corpus = self._encode_corpus_flag
             self.encode_queries = self._encode_queries_flag
             self.dim = None
