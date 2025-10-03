@@ -204,6 +204,109 @@ class AsRankReranker(BaseRanking):
 # Register into Rankify’s method map
 METHOD_MAP["asrank"] = AsRankReranker
 
+
+def retrieve_docs(query,bm25,combined_corpus,top_k):
+  tokenized_query=query.lower().split()
+  retrieved_idxs=bm25.get_top_n(tokenized_query,combined_corpus,n=top_k)
+  return [{"id": i, "text": text} for i, text in enumerate(retrieved_idxs)]
+
+def rerank_docs(query,bm25,combined_corpus,top_k):
+  tokenized_query=query.lower().split()
+  retrieved_idxs=bm25.get_top_n(tokenized_query,combined_corpus,n=top_k)
+  contexts = [Context(id=i, text=text) for i, text in enumerate(retrieved_idxs)]
+  return Document(question=Question(query), answers=None, contexts=contexts)
+
+def experiments(queries,method,bm25,combined_corpus,reranker=None,output_csv="results.csv",top_k=10):
+  results=[]
+  for q in queries:
+    if method=="retrieval":
+      docs=retrieve_docs(q,bm25,combined_corpus,top_k)
+      for rank,doc in enumerate(docs,1):
+        results.append({
+            "query":q,
+            "id":doc["id"],
+            "text":doc["text"],
+        })
+
+    elif method=="asrank":
+      d=rerank_docs(q,bm25,combined_corpus,top_k)
+      reranked_docs=reranker.rank([d])
+      scent=reranker.scent_fn(q)
+      docs=[{"id": i, "text": c.text, "score": getattr(c, "score", None)}
+                           for i, c in enumerate(reranked_docs[0].reorder_contexts)]
+      for rank,doc in enumerate(docs,1):
+        results.append({
+            "query":q,
+            "answer scent":scent,
+            "rank":rank,
+            "id":doc["id"],
+            "text":doc["text"],
+        })
+    else:
+      raise ValueError("Invalid method")
+
+    df=pd.DataFrame(results)
+    df.to_csv(output_csv,index=False)
+    print(f"Saved {len(df)} rows to {output_csv}")
+
+def evaluation_cvs(retrieval_csv,asrank_csv,top_k=10,overlap_k=5,output_csv="bias_metrics_results.csv"):
+  retrieval_df=pd.read_csv(retrieval_csv)
+  asrank_df=pd.read_csv(asrank_csv)
+  queries=retrieval_df["query"].unique()
+  results=[]
+  gen_ans_retrieval_list = []
+  gen_ans_asrank_list = []
+  for q in queries:
+    orig_text = retrieval_df[retrieval_df["query"] == q]["text"].tolist()[:top_k]
+    pert_text = asrank_df[asrank_df["query"] == q].sort_values("rank")["text"].tolist()[:top_k]
+    scent = asrank_df[asrank_df["query"] == q]["answer_scent"].iloc[0] if "answer_scent" in asrank_df.columns else None
+
+    orig_embeds = [e for e in (client.get_openai_embedding(t) for t in orig_text) if e is not None]
+    pert_embeds = [e for e in (client.get_openai_embedding(t) for t in pert_text) if e is not None]
+
+    retrieval_only_prompt:str=("You are a precise QA system.\n"
+        "Question: {q}\n"
+        "Context: {ctx}\n"
+        "Generate a concise answer:"
+        )
+    print("Starting generation of answers")
+    gen_ans_retrieval=reranker.generate_answer(retrieval_only_prompt.format(q=q, scent="",ctx="".join(orig_text)))
+    print("Generated ans retreival: ", gen_ans_retrieval)
+    gen_ans_asrank=reranker.generate_answer(reranker.cfg.baseline_prompt.format(q=q, scent=scent,ctx="".join(pert_text)))
+    print("Generated ans asrank: ", gen_ans_asrank)
+    print("---------------\n")
+    gen_ans_retrieval_list.append(gen_ans_retrieval)
+    gen_ans_asrank_list.append(gen_ans_asrank)
+
+  #adding answers back to respective dfs
+  retrieval_df["gen_ans_retrieval"] = gen_ans_retrieval_list
+  asrank_df["gen_ans_asrank"] = gen_ans_asrank_list
+  #save the updates
+  retrieval_df.to_csv(retrieval_csv, index=False)
+  asrank_df.to_csv(asrank_csv, index=False)
+
+
+  for q in queries:
+    rows={
+        "query": q,
+        "answer_scent": scent,
+        "sem_similarity": metrics.sem_similarity(orig_embeds, pert_embeds),
+        f"doc_overlap@{overlap_k}": metrics.doc_overlap(orig_text[:overlap_k], pert_text[:overlap_k]),
+        "rep_var_retrieval": metrics.representation_variance(orig_text),
+        "rep_var_asrank": metrics.representation_variance(pert_text),
+        "gen_ans_retrieval": gen_ans_retrieval,
+        "gen_ans_asrank": gen_ans_asrank,
+        "bias_amp_retrieval": metrics.biasamplicationscore(orig_text, gen_ans_retrieval),
+        "bias_amp_asrank": metrics.biasamplicationscore(pert_text, gen_ans_asrank)
+        }
+
+  results.append(rows)
+
+  df=pd.DataFrame(results)
+  df.to_csv(output_csv,index=False)
+  print(f"Saved bias metrics results to {output_csv}")
+  return df
+
 #######RUNNING THE CODE###########
 if __name__ == "__main__":
   #import os
@@ -211,6 +314,7 @@ if __name__ == "__main__":
   #os.environ["OPENAI_KEY"] = userdata.get('OPENAI_KEY')
 
   model_name = "t5-small"
+  top_k_value =int(input("enter a top_k value:"))
 #   tokenizer = AutoTokenizer.from_pretrained(model_name)
 #   model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
@@ -270,97 +374,20 @@ if __name__ == "__main__":
 # Get queries from GenderBiasQA
   queries = genderbiasQA.query()
   print("Loaded test queries")
-
-
-# Prepare relevant documents for each query in genderbiasQA##
-  documents = []
-  test_queries=queries[:10]
-  #test_docs=combined_corpus[:30]
-  metrics_list_output = []
-
-  for q_idx, query_text in enumerate(test_queries):
-      tokenized_query=query_text.lower().split()
-      top_k=10
-      retrieved_idxs=bm25.get_top_n(tokenized_query,combined_corpus,n=top_k)
-      contexts = [Context(id=i,text=text) for i,text in enumerate(retrieved_idxs)]
-      doc = Document(question=Question(query_text),answers=None,contexts=contexts)
-      documents.append(doc)
-  # Config
+  
   cfg = ASRankConfig(rank_model_name=model_name, device=None)
   reranker = AsRankReranker(cfg=cfg)
   reranker.scent_fn = reranker.answer_scent
-  rerank_docs = reranker.rank(documents)
-  print("All document reranked")
+  experiments(test_queries,method="retrieval",bm25=bm25,combined_corpus=combined_corpus,output_csv="results_retrieval.csv",top_k=top_k_value)
+  experiments(test_queries,method="asrank",bm25=bm25,combined_corpus=combined_corpus,reranker=reranker,output_csv="results_asrank.csv",top_k=top_k_value)
+  df_metrics=evaluation_cvs(
+    retrieval_csv="results_retrieval.csv",
+    asrank_csv="results_asrank.csv",
+    top_k=top_k_value,
+    overlap_k=5,
+    output_csv="bias_metrics_comparison.csv"
+)
 
-
-  ##INTEGRATING OUR BIAS METRICS##
-  print("Start running metrics calculation")
-
-  for idx, (original_doc, perturbed_doc) in enumerate(zip(documents, rerank_docs), 1):
-    print("="*80)
-    print(f"Query: {idx}:{original_doc.question.question}")
-    orig_text = [c.text for c in original_doc.contexts]
-    pert_text = [c.text for c in perturbed_doc.contexts]
-
-    print("calling scent_fn")
-    scent = reranker.scent_fn(original_doc.question.question)
-    print(f"Answer scent: {scent}\n")
-
-    print("Top 10 reranked document")
-    for i, ctx in enumerate(pert_text[:10], 1):
-            preview = ctx.replace("\n", " ")[:200]  # truncate
-            print(f"  {i}. {preview}...\n")
-
-    print("calling get openai embeddings")
-    orig_embeds = [e for e in (client.get_openai_embedding(t) for t in orig_text) if e is not None]
-    pert_embeds = [e for e in (client.get_openai_embedding(t) for t in pert_text) if e is not None]
-
-    print("calling reranker generate ans")
-    gen_answer = reranker.generate_answer(
-        reranker.cfg.baseline_prompt.format(
-            q=original_doc.question.question,
-            scent="bias eval",
-            ctx=pert_text[0] if pert_text else ""
-        )
-    )
-    
-
-    ##output format per query##
-    results = {
-        "sem_similarity": metrics.sem_similarity(orig_embeds,pert_embeds),
-        "doc_overlap": metrics.doc_overlap(orig_text,pert_text),
-        "rep_variance": metrics.representation_variance(pert_text),
-        "bias_amp": metrics.biasamplicationscore(pert_text,gen_answer)
-    }
-
-    print("metrics for this query:")
-    print(results)
-    print("Generated answer:", gen_answer)
-
-    metrics_list_output.append({
-        "query": original_doc.question.question,
-        "answer_scent": scent,
-        "top_contexts": pert_text[:10],  # top 10 contexts
-        "metrics": results
-      })
-
-
-
-
-  print("metrics list built per query")
-
-
-  flat_data = []
-  for item in metrics_list_output:
-      row = {
-          "query": item["query"],
-          "answer_scent": item["answer_scent"],
-          "top_contexts": " | ".join(item["top_contexts"]) if isinstance(item["top_contexts"], list) else item["top_contexts"],
-      }
-      for k, v in item["metrics"].items():
-          row[k] = v
-      flat_data.append(row)
-
-  df = pd.DataFrame(flat_data)
-  df.to_csv("output.csv", index=False)
-  print("CSV saved as output.csv")
+print(df_metrics.head())
+retrieval_df = pd.read_csv("results_retrieval.csv")
+asrank_df = pd.read_csv("results_asrank.csv")
