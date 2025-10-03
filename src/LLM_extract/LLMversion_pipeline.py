@@ -2,12 +2,17 @@ import os
 import time
 import pandas as pd
 import openai
+import sys
+
+from llm_extraction import extract_bias_groups  # Updated LLM extraction function
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from retriever import Retriever
 from embedders import Embedder
 from decomposition import decompose_query, combine_queries
 from rewriting import rewrite_query
 from metrics import doc_overlap, sem_similarity, representation_variance
-from llm_extraction import extract_bias_groups  # Updated LLM extraction function
+
 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
@@ -150,14 +155,14 @@ def llm_pipeline(questions, docs_per_question, all_docs, k=5, mode="Decompose"):
     })
     metrics_csv = os.path.join(RESULTS_FOLDER, f"results_{mode}_{timestamp}.csv")
     metrics_df.to_csv(metrics_csv, index=False)
-    print(f"✅ Metrics saved to {metrics_csv}")
+    print(f"Metrics saved to {metrics_csv}")
 
     # Save bias extraction CSV
     if doc_bias_annotations_all:
         all_bias_df = pd.concat(doc_bias_annotations_all, ignore_index=True)
         bias_csv = os.path.join(RESULTS_FOLDER, f"doc_bias_{mode}_{timestamp}.csv")
         all_bias_df.to_csv(bias_csv, index=False)
-        print(f"✅ Document-level bias annotations saved to {bias_csv}")
+        print(f"Document-level bias annotations saved to {bias_csv}")
 
     return metrics_df, doc_bias_annotations_all, new_synonyms_all
 

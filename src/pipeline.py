@@ -12,6 +12,7 @@ from embedders import Embedder
 import time
 import corpus_load_read
 import os
+import argparse
 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
 
@@ -212,11 +213,37 @@ def corpus_router(name):
     return data.read()
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run RAG bias mitigation pipeline")
+    parser.add_argument("--mode", type=str, default="rewrite", 
+                       choices=["decompose", "rewrite", "both"],
+                       help="Processing mode for the pipeline")
+    parser.add_argument("--experiment_id", type=str, default="experiment",
+                       help="Experiment identifier for tracking results")
+    parser.add_argument("--dataset", type=str, default="gender_bias",
+                       choices=["gender_bias", "politics_bias", "bbq", "bibleqa", "islamqa"],
+                       help="Dataset to use for the experiment")
+    parser.add_argument("--corpus", type=str, default="polnli",
+                       choices=["wiki", "polnli", "fever", "msmarco", "sbic", "bbc", "nq", "c4corpus"],
+                       help="Corpus to use for retrieval")
+    parser.add_argument("--k", type=int, default=5,
+                       help="Number of top documents to retrieve")
+    parser.add_argument("--num_questions", type=int, default=5,
+                       help="Number of questions to process")
+    parser.add_argument("--corpus_size", type=int, default=1000,
+                       help="Size of corpus to use")
+    
+    args = parser.parse_args()
+    
+    print(f"Running experiment: {args.experiment_id}")
+    print(f"Mode: {args.mode}")
+    print(f"Dataset: {args.dataset}")
+    print(f"Corpus: {args.corpus}")
     
     print("Loading datasets...")
-    questions, docs = data_router("gender_bias")
-    corpus_data = corpus_router("polnli")
-    q = questions[:5]
-    d = corpus_data["premise"][:1000]
+    questions, docs = data_router(args.dataset)
+    corpus_data = corpus_router(args.corpus)
+    
+    q = questions[:args.num_questions]
+    d = corpus_data["premise"][:args.corpus_size]
 
-    pipeline(q, d, mode="rewrite", k=5)
+    pipeline(q, d, mode=args.mode, k=args.k)

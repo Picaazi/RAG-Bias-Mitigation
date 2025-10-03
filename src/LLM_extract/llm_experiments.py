@@ -1,16 +1,21 @@
 import wandb
-from pipeline import pipeline, data_router
+import sys
 import numpy as np
+import pandas as pd
 import random
 from dotenv import load_dotenv
 import os
 from openai import OpenAI
 import openai
 from LLMversion_pipeline import llm_pipeline
+import time
 
-#For me to use
-env_path = os.path.join(os.path.dirname(__file__), "api.env")
-load_dotenv(env_path)
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from pipeline import pipeline, data_router, corpus_router
+
+# #For me to use
+# env_path = os.path.join(os.path.dirname(__file__), "api.env")
+# load_dotenv(env_path)
 
 openai.api_key = os.environ.get("OPENAI_KEY")   
 
@@ -25,6 +30,7 @@ else:
 
 # Create results folder for csv files for local use 
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")
+
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 # Fixed configuration
@@ -61,21 +67,25 @@ def run_all_experiments():
         # Load dataset
         questions, docs = data_router(cfg["dataset"])
         questions = questions[:2]  # limit for testing
+        corpus_data = corpus_router("polnli")
+        corpus_data = corpus_data["premise"][:50]
 
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
         # Initialize WandB
-        wandb.init(project="bias-mitigation", config=cfg)
+        wandb.init(entity="izaacip816-university-of-bristol", project="MSKH", name = f"exp_test_{cfg['dataset']}_{cfg['mode']}_{timestamp}", config=cfg)
 
         # Run pipeline (pipeline already saves CSV) - or change pipeline function (LLM / reg)
         llm_pipeline(
            questions=questions,
-           docs=docs,
+           docs_per_question=docs,
+           all_docs=corpus_data,
            k=cfg["top_k"],
         mode=cfg["mode"]
        )
 
         # Find the most recent CSV file saved by pipeline
         saved_files = sorted(
-            [f for f in os.listdir(RESULTS_FOLDER) if f.startswith(f"results_with_bias_{cfg['mode']}")],
+            [f for f in os.listdir(RESULTS_FOLDER) if f.startswith(f"results_{cfg['mode']}")],
             key=lambda x: os.path.getmtime(os.path.join(RESULTS_FOLDER, x))
         )
 

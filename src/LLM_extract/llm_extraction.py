@@ -1,22 +1,30 @@
+
+import bm25s
+import pandas as pd
+
+import time
+import os 
+import sys
+
+from openai import OpenAI
+import json
+import re
+from dotenv import load_dotenv
+
+
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import data_reading
 from decomposition import decompose_query, combine_queries
 from rewriting import rewrite_query
 from bias_detection import detect_bias
 from metrics import doc_overlap, sem_similarity, representation_variance
-import bm25s
-import pandas as pd
 import multi_dataset_loader as dataloader
 import corpus_load_read
 from retriever import Retriever
 from embedders import Embedder
-import time
-import os 
-from bias_grps import get_bias_grps
-from openai import OpenAI
-import json
-import re
-from dotenv import load_dotenv
 from client import query_openai
+from bias_grps import get_bias_grps
 
 # --- Setup ---
 RESULTS_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "results")

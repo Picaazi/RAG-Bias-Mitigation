@@ -40,7 +40,15 @@ echo "Config file: $config_file"
 
 # Run the experiment with logging
 echo "Starting pipeline execution at $(date)" >> $log_file
-python3 src/pipeline.py --mode $mode --log_file $log_file --experiment_id "${mode}_${timestamp}" 2>&1 | tee -a $log_file
+python3 src/pipeline.py \
+    --mode $mode \
+    --experiment_id "${mode}_${timestamp}" \
+    --dataset "gender_bias" \
+    --corpus "polnli" \
+    --k 5 \
+    --num_questions 5 \
+    --corpus_size 10 \
+    2>&1 | tee -a $log_file
 
 # Log completion
 echo "" >> $log_file
