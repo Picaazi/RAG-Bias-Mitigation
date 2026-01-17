@@ -12,28 +12,6 @@ sys.path.append(SRC_ROOT)
 
 
 # =============================
-# Function: load_corpus_docs
-# =============================
-def load_corpus_docs(corpus_path):
-    """
-    Load corpus documents used as distractors.
-    
-    Parameters:
-    - corpus_path (str): Path to CSV file containing corpus documents.
-    
-    Assumes the CSV has a column named 'text'.
-    
-    Returns:
-    - List[str]: List of document texts (strings).
-    """
-    # Read CSV file into pandas DataFrame
-    df = pd.read_csv(corpus_path)
-    
-    # Convert the 'text' column to a list of strings, drop empty values
-    return [str(x) for x in df["text"].dropna().tolist()]
-
-
-# =============================
 # Function: build_genderbias_eval_index
 # =============================
 def build_genderbias_eval_index(
